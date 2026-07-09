@@ -1,0 +1,60 @@
+app:
+  name: "python-media-service"
+  environment: "development"
+  host: "0.0.0.0"
+  port: 8000
+  log_level: "INFO"
+
+java_api:
+  base_url: "http://java-api-server:8080"
+  session_validate_endpoint: "/api/auth/session/validate"
+  camera_device_info_endpoint: "/api/cameras/{camera_id}/device-info"
+  timeout_seconds: 5
+  retry_count: 2
+
+security:
+  enable_bearer_validation: true
+  mask_rtsp_url_in_logs: true
+  allow_docs_in_production: false
+
+mediamtx:
+  base_url: "http://mediamtx:9997"
+  public_hls_base_url: "https://media.example.com"
+  public_webrtc_base_url: "https://media.example.com"
+  rtsp_transport: "tcp"
+  path_prefix: "cam-"
+  auto_create_paths: true
+  start_on_demand: true
+
+recording:
+  enabled: true
+  storage_root: "./storage/recordings"
+  segment_duration_seconds: 900
+  file_extension: "mp4"
+  ffmpeg_path: "ffmpeg"
+  rtsp_transport: "tcp"
+  video_codec_mode: "copy"
+  include_audio: false
+  max_restart_attempts: 5
+  restart_delay_seconds: 10
+  stop_grace_seconds: 10
+
+worker:
+  max_recording_workers: 300
+  max_live_streams: 300
+  health_check_interval_seconds: 30
+  inactive_stream_ttl_seconds: 300
+
+storage:
+  retention_days: 30
+  min_free_disk_percent: 15
+  cleanup_enabled: true
+
+database:
+  enabled: false
+  type: "postgresql"
+  host: ""
+  port: 5432
+  name: ""
+  username: ""
+  password: ""

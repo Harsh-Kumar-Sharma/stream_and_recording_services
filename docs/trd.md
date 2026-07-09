@@ -709,3 +709,43 @@ INVALID_FILE_PATH
 - Admin UI for service status
 - Prometheus/Grafana monitoring
 - Object storage integration
+
+---
+
+## 16. Current Implementation Status
+
+Updated on 2026-07-09.
+
+Implemented foundation:
+
+- `python-media-service/app/main.py` provides the FastAPI application.
+- `python-media-service/app/core/config.py` loads and validates `config/config.yaml`.
+- `python-media-service/app/core/logging.py` configures console/file logging and masks RTSP credentials.
+- `python-media-service/app/api/routes/health.py` exposes `/health` and `/api/v1/health`.
+- `python-media-service/app/services/java_client.py` validates bearer tokens and fetches camera device info from Java.
+- `python-media-service/app/middleware/auth_middleware.py` protects non-public APIs and maps auth errors.
+- `python-media-service/app/services/camera_service.py` validates active camera status and keeps RTSP data internal.
+- `python-media-service/app/services/mediamtx_service.py` generates MediaMTX paths and HLS URLs from YAML config.
+- `python-media-service/app/services/stream_service.py` tracks active streams in memory.
+- `python-media-service/app/api/routes/streams.py` exposes stream start, stop, status, and list APIs.
+- `python-media-service/app/workers/recorder_worker.py` builds FFmpeg segmented MP4 commands and creates camera/date/hour output folders.
+- `python-media-service/app/workers/process_manager.py` tracks FFmpeg processes, blocks duplicate starts, stops workers, monitors exits, and restarts failed workers when configured.
+- `python-media-service/app/services/recording_service.py` starts/stops recording workers after camera validation.
+- `python-media-service/app/api/routes/recorders.py` exposes recorder start, stop, status, and list APIs.
+- `python-media-service/README.md` documents Windows PowerShell setup and run commands.
+
+Verification performed:
+
+- Python compile check passed for `python-media-service/app`.
+- Config loader successfully loaded the default YAML file.
+- Uvicorn started locally on `127.0.0.1:8001`.
+- `/health` and `/api/v1/health` returned successful JSON responses.
+- `python -m unittest discover -s tests` passed 29 tests covering config, RTSP masking, Java client responses, Java timeout handling, auth middleware responses, camera service behavior, MediaMTX path/URL generation, stream route/service behavior, FFmpeg command building, process manager lifecycle/restart behavior, and recorder route/service behavior.
+- Uvicorn smoke check confirmed `/api/v1/health` works and `/api/v1/streams/CAM-101/status` rejects missing bearer token with `AUTH_TOKEN_MISSING`.
+- Uvicorn smoke check confirmed `/api/v1/recorders/CAM-101/status` rejects missing bearer token with `AUTH_TOKEN_MISSING`.
+
+Next technical slice:
+
+1. Build `app/services/playback_service.py`.
+2. Add playback search/files/file routes.
+3. Add path traversal tests and storage free-space checks.

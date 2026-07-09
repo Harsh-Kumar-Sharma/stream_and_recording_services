@@ -1,0 +1,81 @@
+import asyncio
+import unittest
+from pathlib import Path
+
+import httpx
+
+from app.core.config import load_settings
+from app.core.exceptions import AuthServiceUnavailableError, AuthTokenInvalidError
+from app.services.java_client import JavaApiClient
+
+
+def settings_for_test():
+    settings = load_settings(Path(__file__).resolve().parents[1] / "config" / "config.yaml")
+    settings.java_api.retry_count = 0
+    return settings
+
+
+class JavaApiClientTests(unittest.TestCase):
+    def test_valid_token_response_is_parsed(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            self.assertEqual(request.headers["Authorization"], "Bearer valid-token")
+            return httpx.Response(
+                200,
+                json={
+                    "valid": True,
+                    "userId": "USER-101",
+                    "username": "harsh",
+                    "roles": ["ADMIN"],
+                    "permissions": ["CAMERA_LIVE_VIEW"],
+                },
+            )
+
+        client = JavaApiClient(settings_for_test(), transport=httpx.MockTransport(handler))
+        session = asyncio.run(client.validate_token("valid-token"))
+
+        self.assertEqual(session.user_id, "USER-101")
+        self.assertEqual(session.roles, ["ADMIN"])
+
+    def test_invalid_token_response_is_handled(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json={"valid": False, "message": "Invalid or expired token"})
+
+        client = JavaApiClient(settings_for_test(), transport=httpx.MockTransport(handler))
+
+        with self.assertRaises(AuthTokenInvalidError):
+            asyncio.run(client.validate_token("bad-token"))
+
+    def test_java_timeout_maps_to_auth_service_unavailable(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            raise httpx.TimeoutException("timeout")
+
+        client = JavaApiClient(settings_for_test(), transport=httpx.MockTransport(handler))
+
+        with self.assertRaises(AuthServiceUnavailableError):
+            asyncio.run(client.validate_token("valid-token"))
+
+    def test_camera_device_info_response_is_parsed(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                json={
+                    "cameraId": "CAM-101",
+                    "cameraName": "Gantry 1 Lane 1 Camera",
+                    "rtspUrl": "rtsp://user:secret@192.168.1.10:554/stream1",
+                    "ipAddress": "192.168.1.10",
+                    "status": "active",
+                    "siteId": "SITE-01",
+                    "gantryId": "GANTRY-01",
+                    "laneId": "LANE-01",
+                },
+            )
+
+        client = JavaApiClient(settings_for_test(), transport=httpx.MockTransport(handler))
+        camera = asyncio.run(client.get_camera_device_info("CAM-101", "valid-token"))
+
+        self.assertEqual(camera.camera_id, "CAM-101")
+        self.assertEqual(camera.status, "active")
+
+
+if __name__ == "__main__":
+    unittest.main()

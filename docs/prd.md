@@ -480,3 +480,31 @@ The project is successful when:
 - Python can search and serve playback files.
 - No raw RTSP URL is exposed to frontend.
 - YAML config controls app, Java API, MediaMTX, FFmpeg, worker, and storage settings.
+
+---
+
+## 11. Current Implementation Status
+
+Updated on 2026-07-09.
+
+Completed:
+
+- FastAPI project scaffold exists under `python-media-service`.
+- YAML configuration exists with app, Java API, security, MediaMTX, recording, worker, storage, and disabled future database sections.
+- Basic `/health` and detailed `/api/v1/health` endpoints exist.
+- Structured logging and RTSP credential masking are implemented.
+- Java API client validates bearer tokens and fetches camera device info.
+- Bearer token middleware protects non-public routes and attaches session info to request state.
+- Camera service validates active camera status and keeps RTSP URLs internal.
+- MediaMTX service generates `cam-{camera_id}` paths and public HLS URLs from YAML config.
+- Stream start, stop, status, and list APIs are available under `/api/v1/streams`.
+- FFmpeg command builder creates segmented MP4 recording commands from YAML config.
+- Process manager tracks per-camera FFmpeg workers, blocks duplicates, stops workers, monitors exits, and restarts failed workers when configured.
+- Recorder start, stop, status, and list APIs are available under `/api/v1/recorders`.
+
+Pending:
+
+- Actual MediaMTX runtime/container verification.
+- Live FFmpeg recording verification against a reachable RTSP source.
+- Playback search/file serving APIs.
+- Docker/deployment hardening and full integration testing.

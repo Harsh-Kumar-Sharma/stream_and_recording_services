@@ -13,26 +13,26 @@ The AI/developer must review the implementation against this checklist after eac
 ### Required Scope
 
 - [ ] React frontend calls Python FastAPI directly for stream/playback/recording.
-- [ ] Python validates bearer token by calling Java API.
-- [ ] Python gets camera RTSP/device info from Java API.
+- [x] Python validates bearer token by calling Java API.
+- [x] Python gets camera RTSP/device info from Java API.
 - [ ] Python uses MediaMTX for live streaming.
-- [ ] Python uses FFmpeg for recording.
-- [ ] Recording runs in background worker.
-- [ ] Recording files are saved as segmented `.mp4`.
-- [ ] YAML config is used.
-- [ ] No database is required for current version.
-- [ ] Future DB config exists but is disabled.
+- [x] Python uses FFmpeg for recording.
+- [x] Recording runs in background worker.
+- [x] Recording files are saved as segmented `.mp4`.
+- [x] YAML config is used.
+- [x] No database is required for current version.
+- [x] Future DB config exists but is disabled.
 
 ### Out of Scope Check
 
 Confirm these are not incorrectly added:
 
-- [ ] Python does not implement login.
-- [ ] Python does not implement user management.
-- [ ] Python does not implement role management.
-- [ ] Python does not expose RTSP URL to frontend.
-- [ ] Python does not process video frames for analytics.
-- [ ] Python does not force database dependency.
+- [x] Python does not implement login.
+- [x] Python does not implement user management.
+- [x] Python does not implement role management.
+- [x] Python does not expose RTSP URL to frontend.
+- [x] Python does not process video frames for analytics.
+- [x] Python does not force database dependency.
 - [ ] Frontend does not need to call Java directly for media flow.
 
 ---
@@ -53,12 +53,12 @@ MediaMTX / FFmpeg / Storage / Cameras
 
 Checklist:
 
-- [ ] Stream API is exposed from Python.
+- [x] Stream API is exposed from Python.
 - [ ] Playback API is exposed from Python.
-- [ ] Recorder API is exposed from Python.
-- [ ] Java is called only for token validation and camera info.
+- [x] Recorder API is exposed from Python.
+- [x] Java is called only for token validation and camera info.
 - [ ] MediaMTX handles live stream output.
-- [ ] FFmpeg handles recording output.
+- [x] FFmpeg handles recording output.
 
 ---
 
@@ -66,14 +66,14 @@ Checklist:
 
 ### Required Behavior
 
-- [ ] Middleware checks `Authorization` header.
-- [ ] Middleware requires `Bearer <token>` format.
-- [ ] Middleware calls Java session validation API.
-- [ ] Valid token allows request.
-- [ ] Invalid token returns 401.
-- [ ] Missing token returns 401.
-- [ ] Java auth service down returns 503.
-- [ ] User/session data is attached to request state if needed.
+- [x] Middleware checks `Authorization` header.
+- [x] Middleware requires `Bearer <token>` format.
+- [x] Middleware calls Java session validation API.
+- [x] Valid token allows request.
+- [x] Invalid token returns 401.
+- [x] Missing token returns 401.
+- [x] Java auth service down returns 503.
+- [x] User/session data is attached to request state if needed.
 
 ### Error Response Check
 
@@ -106,7 +106,7 @@ Java unavailable response:
 
 Status:
 
-- [ ] Error responses match expected format.
+- [x] Error responses match expected format.
 
 ---
 
@@ -122,12 +122,12 @@ GET /api/auth/session/validate
 
 Checklist:
 
-- [ ] Python calls this endpoint.
-- [ ] Python sends bearer token to Java.
-- [ ] Python handles valid response.
-- [ ] Python handles invalid response.
-- [ ] Python handles timeout.
-- [ ] Python handles Java server error.
+- [x] Python calls this endpoint.
+- [x] Python sends bearer token to Java.
+- [x] Python handles valid response.
+- [x] Python handles invalid response.
+- [x] Python handles timeout.
+- [x] Python handles Java server error.
 
 ---
 
@@ -141,12 +141,12 @@ GET /api/cameras/{camera_id}/device-info
 
 Checklist:
 
-- [ ] Python calls this endpoint after successful token validation.
-- [ ] Python receives RTSP URL.
-- [ ] Python receives camera ID/name/IP/status.
-- [ ] Python checks camera is active.
-- [ ] Python does not return RTSP URL to frontend.
-- [ ] Python masks RTSP URL in logs.
+- [x] Python calls this endpoint after successful token validation.
+- [x] Python receives RTSP URL.
+- [x] Python receives camera ID/name/IP/status.
+- [x] Python checks camera is active.
+- [x] Python does not return RTSP URL to frontend.
+- [x] Python masks RTSP URL in logs.
 
 ---
 
@@ -163,16 +163,16 @@ GET  /api/v1/streams
 
 Checklist:
 
-- [ ] Start stream API exists.
-- [ ] Stop stream API exists.
-- [ ] Stream status API exists.
-- [ ] List active streams API exists.
-- [ ] Start stream validates token.
-- [ ] Start stream gets camera info from Java.
-- [ ] Start stream configures/verifies MediaMTX path.
-- [ ] Start stream returns HLS URL.
-- [ ] Start stream does not return RTSP URL.
-- [ ] Status API returns active/inactive state.
+- [x] Start stream API exists.
+- [x] Stop stream API exists.
+- [x] Stream status API exists.
+- [x] List active streams API exists.
+- [x] Start stream validates token.
+- [x] Start stream gets camera info from Java.
+- [x] Start stream configures/verifies MediaMTX path.
+- [x] Start stream returns HLS URL.
+- [x] Start stream does not return RTSP URL.
+- [x] Status API returns active/inactive state.
 
 Expected response example:
 
@@ -188,7 +188,7 @@ Expected response example:
 
 Status:
 
-- [ ] Stream response follows expected format.
+- [x] Stream response follows expected format.
 
 ---
 
@@ -199,10 +199,10 @@ Checklist:
 - [ ] MediaMTX is installed/running.
 - [ ] MediaMTX is reachable from Python service.
 - [ ] MediaMTX HLS is enabled.
-- [ ] Path naming uses `cam-{camera_id}`.
-- [ ] Stream URL is generated from YAML config.
+- [x] Path naming uses `cam-{camera_id}`.
+- [x] Stream URL is generated from YAML config.
 - [ ] MediaMTX errors are handled.
-- [ ] MediaMTX configuration is not hardcoded.
+- [x] MediaMTX configuration is not hardcoded.
 
 Path check:
 
@@ -231,17 +231,17 @@ GET  /api/v1/recorders
 
 Checklist:
 
-- [ ] Start recording API exists.
-- [ ] Stop recording API exists.
-- [ ] Recording status API exists.
-- [ ] List active recorders API exists.
-- [ ] Start recording validates token.
-- [ ] Start recording gets camera info from Java.
-- [ ] Start recording starts background worker.
-- [ ] Start recording returns immediately.
-- [ ] Duplicate recording worker for same camera is blocked.
-- [ ] Stop recording gracefully terminates FFmpeg.
-- [ ] Status returns process ID and recording status.
+- [x] Start recording API exists.
+- [x] Stop recording API exists.
+- [x] Recording status API exists.
+- [x] List active recorders API exists.
+- [x] Start recording validates token.
+- [x] Start recording gets camera info from Java.
+- [x] Start recording starts background worker.
+- [x] Start recording returns immediately.
+- [x] Duplicate recording worker for same camera is blocked.
+- [x] Stop recording gracefully terminates FFmpeg.
+- [x] Status returns process ID and recording status.
 
 ---
 
@@ -249,16 +249,16 @@ Checklist:
 
 Checklist:
 
-- [ ] FFmpeg path comes from YAML config.
-- [ ] FFmpeg uses RTSP URL internally.
-- [ ] FFmpeg uses RTSP over TCP by default.
-- [ ] FFmpeg uses `-c:v copy` by default.
-- [ ] FFmpeg writes `.mp4` segments.
-- [ ] Segment duration comes from YAML config.
-- [ ] Output folder is camera-wise/date-wise/hour-wise.
-- [ ] Worker monitors FFmpeg process.
-- [ ] Worker supports restart attempts.
-- [ ] Worker logs FFmpeg failures.
+- [x] FFmpeg path comes from YAML config.
+- [x] FFmpeg uses RTSP URL internally.
+- [x] FFmpeg uses RTSP over TCP by default.
+- [x] FFmpeg uses `-c:v copy` by default.
+- [x] FFmpeg writes `.mp4` segments.
+- [x] Segment duration comes from YAML config.
+- [x] Output folder is camera-wise/date-wise/hour-wise.
+- [x] Worker monitors FFmpeg process.
+- [x] Worker supports restart attempts.
+- [x] Worker logs FFmpeg failures.
 
 Expected command contains:
 
@@ -273,7 +273,7 @@ Expected command contains:
 
 Status:
 
-- [ ] FFmpeg command follows expected pattern.
+- [x] FFmpeg command follows expected pattern.
 
 ---
 
@@ -287,13 +287,13 @@ Expected structure:
 
 Checklist:
 
-- [ ] Storage root comes from YAML config.
-- [ ] Service creates folders automatically.
-- [ ] Recording files are `.mp4`.
+- [x] Storage root comes from YAML config.
+- [x] Service creates folders automatically.
+- [x] Recording files are `.mp4`.
 - [ ] Disk writable check exists.
 - [ ] Free disk check exists.
-- [ ] Retention config exists.
-- [ ] Cleanup job exists or is planned.
+- [x] Retention config exists.
+- [x] Cleanup job exists or is planned.
 - [ ] Playback cannot access files outside storage root.
 
 ---
@@ -344,16 +344,16 @@ config/config.yaml
 
 Checklist:
 
-- [ ] `app` section exists.
-- [ ] `java_api` section exists.
-- [ ] `security` section exists.
-- [ ] `mediamtx` section exists.
-- [ ] `recording` section exists.
-- [ ] `worker` section exists.
-- [ ] `storage` section exists.
-- [ ] `database` section exists.
-- [ ] `database.enabled` is false by default.
-- [ ] No important value is hardcoded in Python code.
+- [x] `app` section exists.
+- [x] `java_api` section exists.
+- [x] `security` section exists.
+- [x] `mediamtx` section exists.
+- [x] `recording` section exists.
+- [x] `worker` section exists.
+- [x] `storage` section exists.
+- [x] `database` section exists.
+- [x] `database.enabled` is false by default.
+- [x] No important value is hardcoded in Python code.
 
 ---
 
@@ -361,19 +361,19 @@ Checklist:
 
 Checklist:
 
-- [ ] Logs are structured.
-- [ ] Logs include timestamp.
-- [ ] Logs include level.
-- [ ] Logs include camera ID where applicable.
+- [x] Logs are structured.
+- [x] Logs include timestamp.
+- [x] Logs include level.
+- [x] Logs include camera ID where applicable.
 - [ ] Logs include stream/recording action.
-- [ ] Logs mask RTSP credentials.
+- [x] Logs mask RTSP credentials.
 - [ ] Logs capture Java API errors.
 - [ ] Logs capture FFmpeg errors.
 - [ ] Logs capture storage errors.
 
 Critical security check:
 
-- [ ] Full RTSP URL with password is never printed.
+- [x] Full RTSP URL with password is never printed.
 
 ---
 
@@ -417,13 +417,14 @@ Checklist:
 
 Checklist:
 
-- [ ] Config loader test exists.
-- [ ] Auth middleware test exists.
-- [ ] Java client mock test exists.
-- [ ] Camera service test exists.
-- [ ] MediaMTX service test exists or mock exists.
-- [ ] FFmpeg command builder test exists.
-- [ ] Process manager test exists.
+- [x] Config loader test exists.
+- [x] RTSP URL masking test exists.
+- [x] Auth middleware test exists.
+- [x] Java client mock test exists.
+- [x] Camera service test exists.
+- [x] MediaMTX service test exists or mock exists.
+- [x] FFmpeg command builder test exists.
+- [x] Process manager test exists.
 - [ ] Playback file search test exists.
 - [ ] Path traversal test exists.
 
@@ -436,39 +437,58 @@ After audit, fill this section.
 ### Completed Items
 
 ```txt
-- 
+- Phase 1 project scaffold created under python-media-service.
+- FastAPI app has /health and /api/v1/health endpoints.
+- YAML configuration loader validates app, Java API, security, MediaMTX, recording, worker, storage, and database sections.
+- Environment overrides are supported with MEDIA_SERVICE__SECTION__KEY variables.
+- Structured console/file logging is configured.
+- RTSP credential masking utility is implemented and covered by a unit test.
+- Java API client validates tokens, fetches camera device info, handles timeout/retry behavior, and maps errors.
+- Bearer token middleware rejects missing/invalid tokens, returns 503 when Java auth is unavailable, and attaches session info to request state.
+- Auth middleware and Java client behavior are covered by unit tests with mocks.
+- Camera service fetches Java camera info, rejects inactive cameras, masks RTSP in logs, and keeps RTSP out of API responses.
+- MediaMTX service generates `cam-{camera_id}` paths and HLS URLs from YAML config.
+- Stream start, stop, status, and list APIs are mounted under `/api/v1/streams`.
+- Stream service and route behavior are covered by tests.
+- FFmpeg command builder creates segmented MP4 recording commands from YAML config.
+- Process manager tracks per-camera FFmpeg workers, blocks duplicate starts, stops workers, monitors exits, and restarts failed workers when configured.
+- Recorder start, stop, status, and list APIs are mounted under `/api/v1/recorders`.
+- Recorder worker, process manager, recording service, and recorder route behavior are covered by tests.
+- README contains Windows PowerShell setup and run commands.
 ```
 
 ### Missing Items
 
 ```txt
-- 
+- Actual MediaMTX runtime/container verification is pending.
+- Live FFmpeg recording against a real RTSP source is pending integration verification.
+- Playback, storage cleanup execution, Docker, and production hardening phases remain pending.
 ```
 
 ### Bugs Found
 
 ```txt
-- 
+- None found in completed foundation/auth/stream/recorder slices.
 ```
 
 ### Security Issues
 
 ```txt
-- 
+- None found in completed foundation/auth/stream/recorder slices. RTSP passwords are masked in logger output and raw RTSP is not returned by stream APIs.
 ```
 
 ### Performance Risks
 
 ```txt
-- 
+- Live stream and recording worker limits are enforced in memory. Multi-process or multi-node shared state remains future work.
 ```
 
 ### Next Required Fixes
 
 ```txt
-1. 
-2. 
-3. 
+1. Implement playback service file search with path traversal protection.
+2. Add playback search/files/file APIs.
+3. Add storage free-space checks and retention cleanup execution.
 ```
 
 ---
@@ -479,12 +499,12 @@ Choose one:
 
 ```txt
 [ ] PASS - Ready for integration testing
-[ ] PARTIAL PASS - Core flow works but missing production items
+[x] PARTIAL PASS - Core foundation, auth client, stream control, and recorder control APIs work but playback/deployment are pending
 [ ] FAIL - Major architecture or security issues found
 ```
 
 Reviewer notes:
 
 ```txt
-
+Foundation, auth-client, camera, MediaMTX path generation, stream control APIs, FFmpeg command building, process management, and recorder APIs completed on 2026-07-09. The service can now be bootstrapped, configured through YAML, checked through health endpoints, validate bearer tokens through Java, fetch camera device info through Java, return HLS stream URLs without exposing RTSP, and manage recording workers. Actual MediaMTX runtime verification, live RTSP/FFmpeg recording verification, playback, and deployment remain pending.
 ```

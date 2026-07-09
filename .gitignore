@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+logs/*.log
+python-media-service/logs/*.log
+python-media-service/storage/recordings/*
+!python-media-service/storage/recordings/.gitkeep
