@@ -208,11 +208,11 @@ Status: Completed on 2026-07-09.
 
 ## Phase 7: MediaMTX Integration
 
-Status: Partially completed on 2026-07-09. Path generation, HLS URL generation, and local status shape exist. Actual MediaMTX installation/runtime verification is pending Docker/deployment work.
+Status: Partially completed on 2026-07-09. Path generation, HLS URL generation, local status shape, Docker runtime verification, synthetic RTSP publishing, and HLS playlist verification are complete. Browser playback in React with a real camera stream is still pending.
 
 ### Tasks
 
-- [ ] Install and run MediaMTX.
+- [x] Install and run MediaMTX.
 - [x] Create `app/services/mediamtx_service.py`.
 - [x] Generate path name using `cam-{camera_id}`.
 - [x] Configure or validate MediaMTX path.
@@ -306,7 +306,7 @@ Status: Completed on 2026-07-09.
 
 ## Phase 10: FFmpeg Recording Worker
 
-Status: Partially completed on 2026-07-09. Command building, folder creation, process monitoring, and restart behavior are implemented. Live MP4 segment creation requires FFmpeg plus a reachable RTSP source.
+Status: Completed on 2026-07-09.
 
 ### Tasks
 
@@ -339,7 +339,7 @@ ffmpeg \
 
 - [x] Recording starts in background.
 - [x] API response is returned immediately.
-- [ ] MP4 segments are created.
+- [x] MP4 segments are created.
 - [x] Worker restarts on failure if enabled.
 
 ---
@@ -377,31 +377,35 @@ GET  /api/v1/recorders
 
 ## Phase 12: Playback Service
 
+Status: Completed on 2026-07-09.
+
 ### Tasks
 
-- [ ] Create `app/services/playback_service.py`.
-- [ ] Search files by camera ID.
-- [ ] Filter files by date/time range.
-- [ ] Generate safe playback URLs.
-- [ ] Prevent path traversal.
-- [ ] Serve `.mp4` files safely.
+- [x] Create `app/services/playback_service.py`.
+- [x] Search files by camera ID.
+- [x] Filter files by date/time range.
+- [x] Generate safe playback URLs.
+- [x] Prevent path traversal.
+- [x] Serve `.mp4` files safely.
 
 ### Acceptance Check
 
-- [ ] Playback search returns only matching files.
-- [ ] Playback URL does not expose unsafe file path.
-- [ ] File serving works in browser.
+- [x] Playback search returns only matching files.
+- [x] Playback URL does not expose unsafe file path.
+- [x] File serving works in browser.
 
 ---
 
 ## Phase 13: Playback APIs
 
+Status: Completed on 2026-07-09.
+
 ### Tasks
 
-- [ ] Create `app/api/routes/playback.py`.
-- [ ] Implement search API.
-- [ ] Implement date-wise files API.
-- [ ] Implement file playback API.
+- [x] Create `app/api/routes/playback.py`.
+- [x] Implement search API.
+- [x] Implement date-wise files API.
+- [x] Implement file playback API.
 
 ### APIs
 
@@ -413,42 +417,44 @@ GET /api/v1/playback/{camera_id}/file
 
 ### Acceptance Check
 
-- [ ] Search validates token.
-- [ ] Search returns playback files.
-- [ ] React can play returned playback URL.
+- [x] Search validates token.
+- [x] Search returns playback files.
+- [x] React can play returned playback URL.
 
 ---
 
 ## Phase 14: Storage Management
 
+Status: Completed on 2026-07-09.
+
 ### Tasks
 
-- [ ] Create storage root if missing.
-- [ ] Check free disk percentage.
-- [ ] Add retention cleanup job.
-- [ ] Add cleanup config in YAML.
-- [ ] Add error if storage is not writable.
+- [x] Create storage root if missing.
+- [x] Check free disk percentage.
+- [x] Add retention cleanup job.
+- [x] Add cleanup config in YAML.
+- [x] Add error if storage is not writable.
 
 ### Acceptance Check
 
-- [ ] Service detects low disk.
-- [ ] Recording is blocked or warned if disk is unsafe.
-- [ ] Old files can be cleaned based on retention days.
+- [x] Service detects low disk.
+- [x] Recording is blocked or warned if disk is unsafe.
+- [x] Old files can be cleaned based on retention days.
 
 ---
 
 ## Phase 15: Health and Monitoring APIs
 
-Status: Partially completed on 2026-07-09. Basic detailed health shape exists; MediaMTX reachability, Java reachability, active worker counts, and storage free-space checks will be completed after service integrations exist.
+Status: Completed on 2026-07-09.
 
 ### Tasks
 
 - [x] Add detailed health API.
 - [x] Return active stream count.
 - [x] Return active recording worker count.
-- [ ] Return MediaMTX reachability.
-- [ ] Return Java API reachability if needed.
-- [ ] Return storage free space.
+- [x] Return MediaMTX reachability.
+- [x] Return Java API reachability if needed.
+- [x] Return storage free space.
 
 ### API
 
@@ -458,48 +464,52 @@ GET /api/v1/health
 
 ### Acceptance Check
 
-- [ ] Health API returns useful operational status.
-- [ ] Health API helps debug production issues.
+- [x] Health API returns useful operational status.
+- [x] Health API helps debug production issues.
 
 ---
 
 ## Phase 16: Docker and Deployment
 
+Status: Completed on 2026-07-09.
+
 ### Tasks
 
-- [ ] Create Dockerfile.
-- [ ] Add FFmpeg installation in image.
-- [ ] Add docker-compose for Python service and MediaMTX.
-- [ ] Mount recording storage volume.
-- [ ] Mount config YAML.
-- [ ] Add restart policy.
+- [x] Create Dockerfile.
+- [x] Add FFmpeg installation in image.
+- [x] Add docker-compose for Python service and MediaMTX.
+- [x] Mount recording storage volume.
+- [x] Mount config YAML.
+- [x] Add restart policy.
 
 ### Acceptance Check
 
-- [ ] Service runs in Docker.
-- [ ] MediaMTX runs in Docker.
-- [ ] Recording files persist on mounted storage.
+- [x] Service runs in Docker.
+- [x] MediaMTX runs in Docker.
+- [x] Recording files persist on mounted storage.
 
 ---
 
 ## Phase 17: Production Hardening
 
+Status: Completed on 2026-07-09.
+
 ### Tasks
 
-- [ ] Add request timeout to Java calls.
-- [ ] Add retry policy.
-- [ ] Add max worker limit.
-- [ ] Add graceful shutdown to stop workers.
-- [ ] Add signal handling.
-- [ ] Add CORS rules.
-- [ ] Add API docs.
-- [ ] Add error response standardization.
+- [x] Add request timeout to Java calls.
+- [x] Add retry policy.
+- [x] Add max worker limit.
+- [x] Add graceful shutdown to stop workers.
+- [x] Add signal handling.
+- [x] Add CORS rules.
+- [x] Add API docs.
+- [x] Add error response standardization.
 
 ### Acceptance Check
 
-- [ ] Service does not crash on Java timeout.
-- [ ] Service does not start more than max worker limit.
-- [ ] Service stops safely.
+- [x] Service does not crash on Java timeout.
+- [x] Service does not start more than max worker limit.
+- [x] Service stops safely.
 
 ---
 
@@ -514,12 +524,12 @@ GET /api/v1/health
 - [x] Unit test FFmpeg command builder.
 - [x] Integration test stream start.
 - [x] Integration test recording start/stop.
-- [ ] Integration test playback search.
+- [x] Integration test playback search.
 
 ### Acceptance Check
 
 - [x] Core services have tests.
-- [ ] Basic integration flow works.
+- [x] Basic integration flow works.
 
 ---
 
@@ -530,14 +540,14 @@ GET /api/v1/health
 - [x] Auth middleware working.
 - [x] Java token validation integrated.
 - [x] Java camera info API integrated.
-- [ ] MediaMTX stream setup working.
+- [x] MediaMTX stream setup working.
 - [x] Stream APIs working.
 - [x] FFmpeg recording worker working.
 - [x] Recorder APIs working.
-- [ ] Playback APIs working.
+- [x] Playback APIs working.
 - [x] Storage structure working.
 - [x] Logs implemented.
 - [x] RTSP masking implemented.
-- [ ] Docker setup ready.
-- [ ] README complete.
+- [x] Docker setup ready.
+- [x] README complete.
 - [ ] Audit checklist passed.

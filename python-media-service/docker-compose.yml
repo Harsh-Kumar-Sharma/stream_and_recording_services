@@ -1,0 +1,45 @@
+services:
+  python-media-service:
+    build:
+      context: .
+    container_name: python-media-service
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      MEDIA_SERVICE_CONFIG: /app/config/config.yaml
+      MEDIA_SERVICE__APP__ENVIRONMENT: production
+      MEDIA_SERVICE__JAVA_API__BASE_URL: http://mock-java:8080
+      MEDIA_SERVICE__RECORDING__STORAGE_ROOT: /data/recordings
+      MEDIA_SERVICE__RECORDING__FFMPEG_PATH: /usr/bin/ffmpeg
+      MEDIA_SERVICE__RECORDING__SEGMENT_DURATION_SECONDS: 5
+      MEDIA_SERVICE__MEDIAMTX__BASE_URL: http://mediamtx:9997
+      MEDIA_SERVICE__MEDIAMTX__PUBLIC_HLS_BASE_URL: http://localhost:8888
+    volumes:
+      - ./config/config.yaml:/app/config/config.yaml:ro
+      - ./storage/recordings:/data/recordings
+      - ./logs:/app/logs
+    depends_on:
+      - mediamtx
+      - mock-java
+
+  mock-java:
+    build:
+      context: .
+    container_name: mock-java-api
+    restart: unless-stopped
+    command: ["python", "-m", "uvicorn", "app.mock_java:app", "--host", "0.0.0.0", "--port", "8080"]
+    ports:
+      - "8081:8080"
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: mediamtx
+    restart: unless-stopped
+    ports:
+      - "8554:8554"
+      - "8888:8888"
+      - "8889:8889"
+      - "9997:9997"
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro

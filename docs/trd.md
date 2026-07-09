@@ -732,6 +732,14 @@ Implemented foundation:
 - `python-media-service/app/workers/process_manager.py` tracks FFmpeg processes, blocks duplicate starts, stops workers, monitors exits, and restarts failed workers when configured.
 - `python-media-service/app/services/recording_service.py` starts/stops recording workers after camera validation.
 - `python-media-service/app/api/routes/recorders.py` exposes recorder start, stop, status, and list APIs.
+- `python-media-service/app/services/playback_service.py` searches local recordings and resolves encoded relative playback file tokens safely.
+- `python-media-service/app/api/routes/playback.py` exposes playback search, file listing, and MP4 serving APIs.
+- `python-media-service/app/services/storage_service.py` checks storage writability, free disk percentage, and retention cleanup.
+- `python-media-service/Dockerfile` installs Python dependencies and FFmpeg.
+- `python-media-service/docker-compose.yml` defines the Python service, mock Java API, and MediaMTX with mounted config, logs, and recording storage.
+- `python-media-service/mediamtx.yml` enables RTSP, HLS, WebRTC, and the MediaMTX API.
+- `python-media-service/app/mock_java.py` provides local Docker-only auth and camera-info endpoints for integration verification.
+- `python-media-service/app/main.py` configures CORS, standardized error handlers, and lifespan shutdown cleanup.
 - `python-media-service/README.md` documents Windows PowerShell setup and run commands.
 
 Verification performed:
@@ -740,12 +748,25 @@ Verification performed:
 - Config loader successfully loaded the default YAML file.
 - Uvicorn started locally on `127.0.0.1:8001`.
 - `/health` and `/api/v1/health` returned successful JSON responses.
-- `python -m unittest discover -s tests` passed 29 tests covering config, RTSP masking, Java client responses, Java timeout handling, auth middleware responses, camera service behavior, MediaMTX path/URL generation, stream route/service behavior, FFmpeg command building, process manager lifecycle/restart behavior, and recorder route/service behavior.
+- `python -m unittest discover -s tests` passed 42 tests covering config/env overrides, CORS, RTSP masking, Java client responses, Java timeout handling, auth middleware responses, health dependency shape, camera service behavior, MediaMTX path/URL generation, stream route/service behavior, FFmpeg command building, process manager lifecycle/restart behavior, recorder route/service behavior, playback search/file serving, path traversal protection, and storage checks.
 - Uvicorn smoke check confirmed `/api/v1/health` works and `/api/v1/streams/CAM-101/status` rejects missing bearer token with `AUTH_TOKEN_MISSING`.
 - Uvicorn smoke check confirmed `/api/v1/recorders/CAM-101/status` rejects missing bearer token with `AUTH_TOKEN_MISSING`.
+- Uvicorn smoke check confirmed `/api/v1/health` returns `storageFreePercent` and `/api/v1/playback/search` rejects missing bearer token with `AUTH_TOKEN_MISSING`.
+- Uvicorn smoke check confirmed `/api/v1/health` returns MediaMTX and Java reachability fields.
+- `docker compose config --quiet` passed.
+- Docker Desktop was started successfully.
+- `docker compose build` passed.
+- `docker compose up -d` started `python-media-service`, `mock-java-api`, and `mediamtx`.
+- Runtime `/api/v1/health` from Docker returned `mediamtx.reachable=true` and `javaApi.reachable=true` with mock Java.
+- `docker compose exec -T python-media-service ffmpeg -version` confirmed FFmpeg 7.1.5 is available in the Python container.
+- Mock Java validated `mock-valid-token` and returned `rtsp://mediamtx:8554/cam-CAM-101`.
+- Synthetic FFmpeg publisher streamed test video to MediaMTX path `cam-CAM-101`.
+- `POST /api/v1/streams/CAM-101/start` returned an HLS URL, and `curl -L http://127.0.0.1:8888/cam-CAM-101/index.m3u8` returned an HLS playlist.
+- `POST /api/v1/recorders/CAM-101/start` recorded the synthetic stream and created `storage/recordings/CAM-101/2026-07-09/10/CAM-101_20260709_105707.mp4`.
+- Playback search returned the recorded MP4, and playback file serving returned HTTP 200 with 215911 bytes.
 
 Next technical slice:
 
-1. Build `app/services/playback_service.py`.
-2. Add playback search/files/file routes.
-3. Add path traversal tests and storage free-space checks.
+1. Point `java_api.base_url` at the production Java API and verify real auth/camera-info integration.
+2. Configure a real RTSP camera stream and verify HLS playback in React.
+3. Start recording against the real RTSP source and verify MP4 segments plus playback.

@@ -2,6 +2,7 @@ from app.core.config import Settings
 from app.core.exceptions import MediaServiceError
 from app.schemas.recorder import RecordingState
 from app.services.camera_service import CameraService
+from app.services.storage_service import StorageService
 from app.workers.process_manager import ProcessManager
 from app.workers.recorder_worker import build_ffmpeg_command, recording_output_dir
 
@@ -12,15 +13,18 @@ class RecordingService:
         settings: Settings,
         camera_service: CameraService | None = None,
         process_manager: ProcessManager | None = None,
+        storage_service: StorageService | None = None,
     ) -> None:
         self.settings = settings
         self.camera_service = camera_service or CameraService(settings)
         self.process_manager = process_manager or ProcessManager(settings)
+        self.storage_service = storage_service or StorageService(settings)
 
     async def start_recording(self, camera_id: str, bearer_token: str) -> RecordingState:
         if self.process_manager.active_count() >= self.settings.worker.max_recording_workers:
             raise MediaServiceError("Maximum recording worker limit reached", "MAX_RECORDING_WORKERS_REACHED", 429)
 
+        self.storage_service.ensure_storage_ready()
         camera = await self.camera_service.get_active_camera(camera_id, bearer_token)
         command = build_ffmpeg_command(self.settings, camera)
         output_dir = recording_output_dir(self.settings, camera.camera_id)

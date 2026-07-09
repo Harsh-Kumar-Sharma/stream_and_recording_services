@@ -31,6 +31,8 @@ class SecurityConfig(BaseModel):
     enable_bearer_validation: bool
     mask_rtsp_url_in_logs: bool
     allow_docs_in_production: bool
+    cors_allowed_origins: list[str] = Field(default_factory=lambda: ["*"])
+    cors_allow_credentials: bool = True
 
 
 class MediaMtxConfig(BaseModel):
@@ -95,12 +97,19 @@ class ConfigError(RuntimeError):
     pass
 
 
+def _parse_env_value(value: str) -> Any:
+    try:
+        return yaml.safe_load(value)
+    except yaml.YAMLError:
+        return value
+
+
 def _deep_set(config: dict[str, Any], dotted_key: str, value: str) -> None:
     keys = dotted_key.lower().split("__")
     current = config
     for key in keys[:-1]:
         current = current.setdefault(key, {})
-    current[keys[-1]] = value
+    current[keys[-1]] = _parse_env_value(value)
 
 
 def _apply_env_overrides(config: dict[str, Any]) -> None:

@@ -2,7 +2,11 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
+.tmp-tests/
 logs/*.log
 python-media-service/logs/*.log
 python-media-service/storage/recordings/*
 !python-media-service/storage/recordings/.gitkeep
+python-media-service/storage/test-playback/
+python-media-service/storage/test-playback-routes/
+python-media-service/storage/test-storage/

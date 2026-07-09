@@ -501,10 +501,17 @@ Completed:
 - FFmpeg command builder creates segmented MP4 recording commands from YAML config.
 - Process manager tracks per-camera FFmpeg workers, blocks duplicates, stops workers, monitors exits, and restarts failed workers when configured.
 - Recorder start, stop, status, and list APIs are available under `/api/v1/recorders`.
+- Playback search, date-wise listing, and safe MP4 serving APIs are available under `/api/v1/playback`.
+- Playback uses encoded relative file tokens and blocks path traversal outside the storage root.
+- Storage management checks writable storage, free disk percentage, and retention cleanup.
+- Dockerfile, docker-compose, and MediaMTX config exist for local deployment.
+- Production hardening includes CORS, standardized error responses, graceful recording-worker shutdown, worker limits, and dependency reachability fields in health.
+- Docker image build and compose runtime verification passed.
+- Python service and MediaMTX run together in Docker, and Python health reports MediaMTX reachable.
+- Local mock Java API plus synthetic FFmpeg RTSP stream verified stream start, HLS playlist generation, recording, MP4 storage, playback search, and playback file serving.
 
 Pending:
 
-- Actual MediaMTX runtime/container verification.
-- Live FFmpeg recording verification against a reachable RTSP source.
-- Playback search/file serving APIs.
-- Docker/deployment hardening and full integration testing.
+- Production Java API integration against the real Java service.
+- Browser HLS playback validation with a real camera stream in React.
+- Recording/playback verification against a real camera stream.

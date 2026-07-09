@@ -54,7 +54,7 @@ MediaMTX / FFmpeg / Storage / Cameras
 Checklist:
 
 - [x] Stream API is exposed from Python.
-- [ ] Playback API is exposed from Python.
+- [x] Playback API is exposed from Python.
 - [x] Recorder API is exposed from Python.
 - [x] Java is called only for token validation and camera info.
 - [ ] MediaMTX handles live stream output.
@@ -196,12 +196,12 @@ Status:
 
 Checklist:
 
-- [ ] MediaMTX is installed/running.
-- [ ] MediaMTX is reachable from Python service.
-- [ ] MediaMTX HLS is enabled.
+- [x] MediaMTX is installed/running.
+- [x] MediaMTX is reachable from Python service.
+- [x] MediaMTX HLS is enabled.
 - [x] Path naming uses `cam-{camera_id}`.
 - [x] Stream URL is generated from YAML config.
-- [ ] MediaMTX errors are handled.
+- [x] MediaMTX errors are handled.
 - [x] MediaMTX configuration is not hardcoded.
 
 Path check:
@@ -290,11 +290,11 @@ Checklist:
 - [x] Storage root comes from YAML config.
 - [x] Service creates folders automatically.
 - [x] Recording files are `.mp4`.
-- [ ] Disk writable check exists.
-- [ ] Free disk check exists.
+- [x] Disk writable check exists.
+- [x] Free disk check exists.
 - [x] Retention config exists.
 - [x] Cleanup job exists or is planned.
-- [ ] Playback cannot access files outside storage root.
+- [x] Playback cannot access files outside storage root.
 
 ---
 
@@ -310,13 +310,13 @@ GET /api/v1/playback/{camera_id}/file
 
 Checklist:
 
-- [ ] Playback search validates token.
-- [ ] Playback search filters by camera ID.
-- [ ] Playback search filters by date/time.
-- [ ] Playback returns playback URLs.
-- [ ] Playback file serving works.
-- [ ] Path traversal is blocked.
-- [ ] Missing file returns 404.
+- [x] Playback search validates token.
+- [x] Playback search filters by camera ID.
+- [x] Playback search filters by date/time.
+- [x] Playback returns playback URLs.
+- [x] Playback file serving works.
+- [x] Path traversal is blocked.
+- [x] Missing file returns 404.
 
 Expected search response:
 
@@ -330,7 +330,7 @@ Expected search response:
 
 Status:
 
-- [ ] Playback response follows expected format.
+- [x] Playback response follows expected format.
 
 ---
 
@@ -369,7 +369,7 @@ Checklist:
 - [x] Logs mask RTSP credentials.
 - [ ] Logs capture Java API errors.
 - [ ] Logs capture FFmpeg errors.
-- [ ] Logs capture storage errors.
+- [x] Logs capture storage errors.
 
 Critical security check:
 
@@ -381,18 +381,18 @@ Critical security check:
 
 Checklist:
 
-- [ ] Dockerfile exists.
-- [ ] docker-compose.yml exists.
-- [ ] FFmpeg is installed in container or host.
-- [ ] MediaMTX service is defined.
-- [ ] Recording storage is mounted as volume.
-- [ ] YAML config is mounted externally.
-- [ ] Restart policy exists.
-- [ ] CORS is configured.
-- [ ] API timeout is configured.
-- [ ] Java API retry count is configured.
-- [ ] Graceful shutdown is implemented.
-- [ ] Active FFmpeg workers are stopped on shutdown.
+- [x] Dockerfile exists.
+- [x] docker-compose.yml exists.
+- [x] FFmpeg is installed in container or host.
+- [x] MediaMTX service is defined.
+- [x] Recording storage is mounted as volume.
+- [x] YAML config is mounted externally.
+- [x] Restart policy exists.
+- [x] CORS is configured.
+- [x] API timeout is configured.
+- [x] Java API retry count is configured.
+- [x] Graceful shutdown is implemented.
+- [x] Active FFmpeg workers are stopped on shutdown.
 
 ---
 
@@ -400,16 +400,16 @@ Checklist:
 
 Checklist:
 
-- [ ] FastAPI does not stream video bytes.
-- [ ] MediaMTX handles live video fanout.
-- [ ] FFmpeg handles recording as background process.
-- [ ] Max live streams is configurable.
-- [ ] Max recording workers is configurable.
-- [ ] Duplicate camera recording is blocked.
-- [ ] CPU-heavy transcoding is avoided.
-- [ ] Disk capacity is checked.
-- [ ] Storage retention is configurable.
-- [ ] Future multi-server scaling is documented.
+- [x] FastAPI does not stream video bytes.
+- [x] MediaMTX handles live video fanout.
+- [x] FFmpeg handles recording as background process.
+- [x] Max live streams is configurable.
+- [x] Max recording workers is configurable.
+- [x] Duplicate camera recording is blocked.
+- [x] CPU-heavy transcoding is avoided.
+- [x] Disk capacity is checked.
+- [x] Storage retention is configurable.
+- [x] Future multi-server scaling is documented.
 
 ---
 
@@ -425,8 +425,8 @@ Checklist:
 - [x] MediaMTX service test exists or mock exists.
 - [x] FFmpeg command builder test exists.
 - [x] Process manager test exists.
-- [ ] Playback file search test exists.
-- [ ] Path traversal test exists.
+- [x] Playback file search test exists.
+- [x] Path traversal test exists.
 
 ---
 
@@ -454,41 +454,57 @@ After audit, fill this section.
 - Process manager tracks per-camera FFmpeg workers, blocks duplicate starts, stops workers, monitors exits, and restarts failed workers when configured.
 - Recorder start, stop, status, and list APIs are mounted under `/api/v1/recorders`.
 - Recorder worker, process manager, recording service, and recorder route behavior are covered by tests.
+- Playback search, date-wise listing, and safe MP4 serving APIs are mounted under `/api/v1/playback`.
+- Playback service returns encoded relative file tokens, blocks path traversal, and never returns absolute storage paths.
+- Storage service creates/checks storage root, reports free disk percent, blocks unsafe recording startup, and can clean files older than retention days.
+- Playback and storage behavior are covered by tests.
+- Dockerfile, docker-compose.yml, and MediaMTX config are present with FFmpeg installation, mounted config/storage/log volumes, and restart policies.
+- Production hardening now includes CORS config, lifespan shutdown cleanup, global error response standardization, Java timeout/retry handling, worker limits, and health dependency reachability fields.
+- `docker compose config --quiet` passed.
+- `docker compose build` passed.
+- `docker compose up -d` started Python service, mock Java API, and MediaMTX.
+- Runtime health returned `mediamtx.reachable=true` and `javaApi.reachable=true` with the mock Java API.
+- FFmpeg is installed in the Python container.
+- Mock Java API validated `mock-valid-token` and returned MediaMTX RTSP camera info.
+- Synthetic FFmpeg publisher streamed test video to `rtsp://mediamtx:8554/cam-CAM-101`.
+- Stream API returned `http://localhost:8888/cam-CAM-101/index.m3u8`.
+- HLS playlist fetch succeeded through MediaMTX.
+- Recorder API captured the synthetic RTSP stream and created an MP4 segment on mounted storage.
+- Playback search and file serving returned the recorded MP4 through the Python API.
 - README contains Windows PowerShell setup and run commands.
 ```
 
 ### Missing Items
 
 ```txt
-- Actual MediaMTX runtime/container verification is pending.
-- Live FFmpeg recording against a real RTSP source is pending integration verification.
-- Playback, storage cleanup execution, Docker, and production hardening phases remain pending.
+- Real Java API integration remains pending until the production Java service is reachable.
+- Real camera RTSP/HLS/browser playback remains pending until a camera stream is available.
 ```
 
 ### Bugs Found
 
 ```txt
-- None found in completed foundation/auth/stream/recorder slices.
+- None found in completed foundation/auth/stream/recorder/playback/storage/deployment-hardening slices.
 ```
 
 ### Security Issues
 
 ```txt
-- None found in completed foundation/auth/stream/recorder slices. RTSP passwords are masked in logger output and raw RTSP is not returned by stream APIs.
+- None found in completed foundation/auth/stream/recorder/playback/storage/deployment-hardening slices. RTSP passwords are masked in logger output, raw RTSP is not returned by APIs, and playback file tokens are constrained to the storage root.
 ```
 
 ### Performance Risks
 
 ```txt
-- Live stream and recording worker limits are enforced in memory. Multi-process or multi-node shared state remains future work.
+- Live stream and recording worker limits are enforced in memory. Playback searches the local filesystem. Multi-process or multi-node shared state remains future work.
 ```
 
 ### Next Required Fixes
 
 ```txt
-1. Implement playback service file search with path traversal protection.
-2. Add playback search/files/file APIs.
-3. Add storage free-space checks and retention cleanup execution.
+1. Point `java_api.base_url` at the production Java API and verify real token/camera-info calls.
+2. Configure a real RTSP camera stream and verify HLS playback in the React frontend.
+3. Start recording against the real RTSP source and verify MP4 segments plus playback.
 ```
 
 ---
@@ -499,12 +515,12 @@ Choose one:
 
 ```txt
 [ ] PASS - Ready for integration testing
-[x] PARTIAL PASS - Core foundation, auth client, stream control, and recorder control APIs work but playback/deployment are pending
+[x] PARTIAL PASS - Local Docker end-to-end works with mock Java and synthetic RTSP; production Java/camera integration is pending
 [ ] FAIL - Major architecture or security issues found
 ```
 
 Reviewer notes:
 
 ```txt
-Foundation, auth-client, camera, MediaMTX path generation, stream control APIs, FFmpeg command building, process management, and recorder APIs completed on 2026-07-09. The service can now be bootstrapped, configured through YAML, checked through health endpoints, validate bearer tokens through Java, fetch camera device info through Java, return HLS stream URLs without exposing RTSP, and manage recording workers. Actual MediaMTX runtime verification, live RTSP/FFmpeg recording verification, playback, and deployment remain pending.
+Foundation, auth-client, camera, MediaMTX path generation/runtime, stream control APIs, FFmpeg command building, process management, recorder APIs, playback APIs, storage management, Docker files, production hardening, and local mock end-to-end verification completed on 2026-07-09. The Docker stack validates tokens through mock Java, fetches camera info, publishes synthetic RTSP to MediaMTX, returns an HLS playlist, records MP4 segments, and serves playback files. Production Java API integration and real camera/browser playback verification remain pending.
 ```

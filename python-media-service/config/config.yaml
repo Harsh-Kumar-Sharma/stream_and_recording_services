@@ -16,6 +16,9 @@ security:
   enable_bearer_validation: true
   mask_rtsp_url_in_logs: true
   allow_docs_in_production: false
+  cors_allowed_origins:
+    - "*"
+  cors_allow_credentials: true
 
 mediamtx:
   base_url: "http://mediamtx:9997"

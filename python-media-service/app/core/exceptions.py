@@ -49,3 +49,18 @@ class RecordingNotRunningError(MediaServiceError):
 class FfmpegStartError(MediaServiceError):
     def __init__(self, message: str = "FFmpeg process failed to start") -> None:
         super().__init__(message, "FFMPEG_START_FAILED", 500)
+
+
+class PlaybackFileNotFoundError(MediaServiceError):
+    def __init__(self, message: str = "Playback file not found") -> None:
+        super().__init__(message, "PLAYBACK_FILE_NOT_FOUND", 404)
+
+
+class InvalidFilePathError(MediaServiceError):
+    def __init__(self, message: str = "Invalid file path") -> None:
+        super().__init__(message, "INVALID_FILE_PATH", 400)
+
+
+class StorageNotAvailableError(MediaServiceError):
+    def __init__(self, message: str = "Storage is not available") -> None:
+        super().__init__(message, "STORAGE_NOT_AVAILABLE", 507)
