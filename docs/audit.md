@@ -473,6 +473,9 @@ After audit, fill this section.
 - Mock Java API validated `mock-valid-token` and returned MediaMTX RTSP camera info through the stream-device list contract.
 - Synthetic FFmpeg publisher streamed test video to `rtsp://mediamtx:8554/cam-CAM-101`.
 - Stream API returned `http://localhost:8888/cam-CAM-101/index.m3u8`.
+- For LAN frontend testing, `MEDIA_SERVICE__MEDIAMTX__PUBLIC_HLS_BASE_URL` must use the reachable server IP, for example `http://192.168.0.103:8888`, instead of `localhost`.
+- Python must also reach `MEDIA_SERVICE__MEDIAMTX__BASE_URL`, for example `http://192.168.0.103:9997`; connection failures are mapped to `MEDIAMTX_ERROR` instead of unhandled 500 errors.
+- Stream start now configures MediaMTX with camera RTSP source using `/v3/config/paths/patch/{path}` or `/v3/config/paths/add/{path}`.
 - HLS playlist fetch succeeded through MediaMTX.
 - Recorder API captured the synthetic RTSP stream and created an MP4 segment on mounted storage.
 - Playback search and file serving returned the recorded MP4 through the Python API.

@@ -28,10 +28,49 @@ MediaMTX HLS output:
 http://localhost:8888
 ```
 
+MediaMTX WebRTC output:
+
+```txt
+http://localhost:8889
+```
+
 Example HLS stream returned by Python:
 
 ```txt
 http://localhost:8888/cam-CAM-02/index.m3u8
+```
+
+If React runs on another machine and calls Python by LAN IP, for example:
+
+```txt
+http://192.168.0.103:8000
+```
+
+then Python must return HLS URLs using the same server IP, not `localhost`.
+
+If Python and MediaMTX run on the same server machine:
+
+```txt
+MEDIA_SERVICE__MEDIAMTX__BASE_URL=http://localhost:9997
+MEDIA_SERVICE__MEDIAMTX__PUBLIC_HLS_BASE_URL=http://192.168.0.103:8888
+MEDIA_SERVICE__MEDIAMTX__PUBLIC_WEBRTC_BASE_URL=http://192.168.0.103:8889
+```
+
+Otherwise the browser will try to open `localhost:8888` on the React user's machine and video playback will fail.
+
+`MEDIA_SERVICE__MEDIAMTX__BASE_URL` is for Python to configure MediaMTX paths through the MediaMTX API. `MEDIA_SERVICE__MEDIAMTX__PUBLIC_HLS_BASE_URL` and `MEDIA_SERVICE__MEDIAMTX__PUBLIC_WEBRTC_BASE_URL` are browser-facing playback URLs.
+
+If stream start returns:
+
+```txt
+MEDIAMTX_ERROR
+MediaMTX API is unreachable
+```
+
+check that MediaMTX is running and its API port is reachable:
+
+```txt
+http://192.168.0.103:9997
 ```
 
 ---
@@ -65,7 +104,32 @@ Java session validation must be restored before production.
 
 ---
 
-## 4. Camera ID
+## 4. CORS For React Dev Server
+
+Local React dev server:
+
+```txt
+http://localhost:5173
+```
+
+Python is configured to allow CORS preflight requests, including protected media APIs such as:
+
+```txt
+OPTIONS /api/v1/streams/9/status
+OPTIONS /api/v1/recorders/9/status
+```
+
+If React shows this browser error:
+
+```txt
+No 'Access-Control-Allow-Origin' header is present
+```
+
+restart the Python service after pulling the latest code/config. The auth middleware must skip `OPTIONS` preflight requests so CORS middleware can answer the browser before bearer auth is checked.
+
+---
+
+## 5. Camera ID
 
 Use the Java `customDeviceId` as the React camera ID.
 
@@ -93,7 +157,7 @@ Python trims newline/space characters internally and also supports matching by n
 
 ---
 
-## 5. Error Response Shape
+## 6. Error Response Shape
 
 Common error response:
 
@@ -120,7 +184,7 @@ Common errors:
 
 ---
 
-## 6. Health Check
+## 7. Health Check
 
 Request:
 
@@ -134,7 +198,7 @@ Use this to check if Python is running before enabling media UI controls.
 
 ---
 
-## 7. Live Streaming
+## 8. Live Streaming
 
 ### Start Stream
 
@@ -155,12 +219,14 @@ Success response:
   "streamStatus": "started",
   "streamType": "hls",
   "streamUrl": "http://localhost:8888/cam-CAM-02/index.m3u8",
+  "webrtcUrl": "http://localhost:8889/cam-CAM-02/",
+  "webrtcWhepUrl": "http://localhost:8889/cam-CAM-02/whep",
   "startedAt": "2026-07-10T08:30:00.000000+00:00",
   "lastError": null
 }
 ```
 
-React should use `streamUrl` in an HLS-capable player.
+React should use `streamUrl` in an HLS-capable player, or `webrtcUrl` / `webrtcWhepUrl` for low-latency WebRTC playback.
 
 ### Stream Status
 
@@ -180,6 +246,8 @@ Inactive response:
   "streamStatus": "inactive",
   "streamType": "hls",
   "streamUrl": null,
+  "webrtcUrl": null,
+  "webrtcWhepUrl": null,
   "lastError": null
 }
 ```
@@ -224,7 +292,7 @@ Response:
 
 ---
 
-## 8. HLS Playback In React
+## 9. HLS Playback In React
 
 Browsers do not all play `.m3u8` directly. Use `hls.js` for Chrome/Edge/Firefox.
 
@@ -265,7 +333,40 @@ export function HlsVideo({ streamUrl }: Props) {
 
 ---
 
-## 9. Recording
+## 10. WebRTC Playback In React
+
+MediaMTX exposes a built-in WebRTC page for every stream path:
+
+```txt
+http://192.168.0.103:8889/cam-CAM-02/
+```
+
+After calling `POST /api/v1/streams/CAM-02/start`, React can open or embed the returned `webrtcUrl`.
+
+Simple iframe test:
+
+```tsx
+type Props = {
+  webrtcUrl: string | null;
+};
+
+export function WebRtcFrame({ webrtcUrl }: Props) {
+  if (!webrtcUrl) return null;
+  return <iframe src={webrtcUrl} style={{ width: "100%", height: 420, border: 0 }} allow="autoplay; fullscreen" />;
+}
+```
+
+For a custom React WebRTC player, use the returned WHEP endpoint:
+
+```txt
+http://192.168.0.103:8889/cam-CAM-02/whep
+```
+
+That value is returned as `webrtcWhepUrl`.
+
+---
+
+## 11. Recording
 
 Recording can be enabled/disabled by Python environment:
 
@@ -377,7 +478,7 @@ Response:
 
 ---
 
-## 10. Playback
+## 12. Playback
 
 ### Search Playback Files
 
@@ -443,7 +544,7 @@ Do not build file-system paths in React. Always use the returned `playbackUrl` o
 
 ---
 
-## 11. Suggested React API Helper
+## 13. Suggested React API Helper
 
 ```ts
 const MEDIA_API_BASE_URL = "http://localhost:8000";
@@ -498,16 +599,17 @@ export function searchPlayback(cameraId: string, token: string) {
 
 ---
 
-## 12. Integration Checklist
+## 14. Integration Checklist
 
 - Use Python API base URL `http://localhost:8000`.
 - Send `Authorization: Bearer <token>` on all protected media APIs.
 - Use Java `customDeviceId` as `camera_id`, for example `CAM-02`.
 - Use `streamUrl` from start-stream response for HLS playback.
+- Use `webrtcUrl` from start-stream response for MediaMTX WebRTC playback.
+- Use `webrtcWhepUrl` if building a custom WHEP WebRTC player.
 - Use `hls.js` for `.m3u8` playback in Chrome/Edge/Firefox.
 - Use returned `playbackUrl` for MP4 playback.
 - Handle `RECORDING_DISABLED` by disabling/hiding recording controls.
 - Do not show raw RTSP URLs in React.
 - Do not construct recording file-system paths in React.
 - Remember auth is temporarily hardcoded to pass and must be restored before production.
-

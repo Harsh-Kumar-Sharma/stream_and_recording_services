@@ -20,6 +20,8 @@ class StreamState(BaseModel):
     stream_status: str
     stream_type: str = "hls"
     stream_url: str
+    webrtc_url: str | None = None
+    webrtc_whep_url: str | None = None
     path: str
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_error: str | None = None
@@ -32,6 +34,8 @@ class StreamState(BaseModel):
             "streamStatus": self.stream_status,
             "streamType": self.stream_type,
             "streamUrl": self.stream_url,
+            "webrtcUrl": self.webrtc_url,
+            "webrtcWhepUrl": self.webrtc_whep_url,
             "startedAt": self.started_at.isoformat(),
             "lastError": self.last_error,
         }

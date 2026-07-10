@@ -1,6 +1,16 @@
 api: yes
 apiAddress: :9997
 
+authInternalUsers:
+  - user: any
+    pass:
+    ips: []
+    permissions:
+      - action: publish
+      - action: read
+      - action: playback
+      - action: api
+
 rtsp: yes
 rtspAddress: :8554
 
@@ -9,6 +19,9 @@ hlsAddress: :8888
 
 webrtc: yes
 webrtcAddress: :8889
+webrtcLocalUDPAddress: :8189
+webrtcAdditionalHosts:
+  - 192.168.0.103
 
 paths:
   all:

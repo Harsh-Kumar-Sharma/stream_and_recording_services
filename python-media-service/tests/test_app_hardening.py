@@ -18,6 +18,20 @@ class AppHardeningTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("access-control-allow-origin", response.headers)
 
+    def test_protected_cors_preflight_skips_auth(self) -> None:
+        response = TestClient(create_app()).options(
+            "/api/v1/streams/9/status",
+            headers={
+                "Origin": "http://localhost:5173",
+                "Access-Control-Request-Method": "GET",
+                "Access-Control-Request-Headers": "authorization",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("access-control-allow-origin", response.headers)
+        self.assertIn("authorization", response.headers["access-control-allow-headers"].lower())
+
 
 if __name__ == "__main__":
     unittest.main()

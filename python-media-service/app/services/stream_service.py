@@ -32,11 +32,15 @@ class StreamService:
             camera = await self.camera_service.get_active_camera(camera_id, bearer_token)
             path = await self.mediamtx_service.ensure_stream_path(camera)
             stream_url = self.mediamtx_service.hls_url_for_path(path)
+            webrtc_url = self.mediamtx_service.webrtc_url_for_path(path)
+            webrtc_whep_url = self.mediamtx_service.webrtc_whep_url_for_path(path)
             state = StreamState(
                 camera_id=camera.camera_id,
                 camera_name=camera.camera_name,
                 stream_status="started",
                 stream_url=stream_url,
+                webrtc_url=webrtc_url,
+                webrtc_whep_url=webrtc_whep_url,
                 path=path,
             )
             self._streams[camera_id] = state
@@ -60,6 +64,8 @@ class StreamService:
                 "streamStatus": "inactive",
                 "streamType": "hls",
                 "streamUrl": None,
+                "webrtcUrl": None,
+                "webrtcWhepUrl": None,
                 "lastError": None,
             }
         return state.to_response()

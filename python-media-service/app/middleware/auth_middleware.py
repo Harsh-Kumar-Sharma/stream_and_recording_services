@@ -36,6 +36,9 @@ class BearerTokenMiddleware(BaseHTTPMiddleware):
         self.java_client = java_client or JavaApiClient(settings)
 
     async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         if self._should_skip(request.url.path):
             return await call_next(request)
 

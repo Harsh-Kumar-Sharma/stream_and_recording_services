@@ -9,13 +9,13 @@ services:
     environment:
       MEDIA_SERVICE_CONFIG: /app/config/config.yaml
       MEDIA_SERVICE__APP__ENVIRONMENT: production
-      MEDIA_SERVICE__JAVA_API__BASE_URL: http://mock-java:8080
+      MEDIA_SERVICE__JAVA_API__BASE_URL: http://192.168.0.101:8080
       MEDIA_SERVICE__RECORDING__STORAGE_ROOT: /data/recordings
       MEDIA_SERVICE__RECORDING__FFMPEG_PATH: /usr/bin/ffmpeg
       MEDIA_SERVICE__RECORDING__SEGMENT_DURATION_SECONDS: 5
       MEDIA_SERVICE__MEDIAMTX__BASE_URL: http://mediamtx:9997
-      MEDIA_SERVICE__MEDIAMTX__PUBLIC_HLS_BASE_URL: http://localhost:8888
-      MEDIA_SERVICE__MEDIAMTX__PUBLIC_WEBRTC_BASE_URL: http://localhost:8889
+      MEDIA_SERVICE__MEDIAMTX__PUBLIC_HLS_BASE_URL: http://192.168.0.103:8888
+      MEDIA_SERVICE__MEDIAMTX__PUBLIC_WEBRTC_BASE_URL: http://192.168.0.103:8889
     volumes:
       - ./config/config.yaml:/app/config/config.yaml:ro
       - ./storage/recordings:/data/recordings
@@ -41,6 +41,7 @@ services:
       - "8554:8554"
       - "8888:8888"
       - "8889:8889"
+      - "8189:8189/udp"
       - "9997:9997"
     volumes:
       - ./mediamtx.yml:/mediamtx.yml:ro

@@ -158,6 +158,10 @@ MEDIA_SERVICE__RECORDING__ENABLED=false
 
 When disabled, `POST /api/v1/recorders/{camera_id}/start` must return `503` with error code `RECORDING_DISABLED`. Status, list, and stop endpoints remain available.
 
+For LAN frontend testing, `public_hls_base_url` must use the Python/MediaMTX server IP that the browser can reach, for example `http://192.168.0.103:8888`. Use `http://localhost:8888` only when the browser runs on the same machine as MediaMTX.
+
+For real RTSP stream start, Python also must reach MediaMTX API through `mediamtx.base_url` / `MEDIA_SERVICE__MEDIAMTX__BASE_URL`. If Python and MediaMTX run on the same server, use `http://localhost:9997`; the browser-facing HLS URL can still be `http://192.168.0.103:8888`. If this API is not reachable, stream start returns `502 MEDIAMTX_ERROR`.
+
 ---
 
 ## 3.4 Storage

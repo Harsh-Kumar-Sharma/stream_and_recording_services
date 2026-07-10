@@ -23,6 +23,8 @@ class StubStreamState:
             "streamStatus": "started",
             "streamType": "hls",
             "streamUrl": "http://localhost:8888/cam-CAM-101/index.m3u8",
+            "webrtcUrl": "http://localhost:8889/cam-CAM-101/",
+            "webrtcWhepUrl": "http://localhost:8889/cam-CAM-101/whep",
             "startedAt": "2026-07-09T10:00:00+00:00",
             "lastError": None,
         }
@@ -36,7 +38,14 @@ class StubStreamService:
         return {"status": True, "cameraId": camera_id, "streamStatus": "stopped"}
 
     async def get_status(self, camera_id: str) -> dict:
-        return {"status": True, "cameraId": camera_id, "streamStatus": "inactive", "streamUrl": None}
+        return {
+            "status": True,
+            "cameraId": camera_id,
+            "streamStatus": "inactive",
+            "streamUrl": None,
+            "webrtcUrl": None,
+            "webrtcWhepUrl": None,
+        }
 
     async def list_streams(self) -> dict:
         return {"status": True, "streams": [], "count": 0}
@@ -56,6 +65,8 @@ class StreamRouteTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["streamUrl"], "http://localhost:8888/cam-CAM-101/index.m3u8")
+        self.assertEqual(response.json()["webrtcUrl"], "http://localhost:8889/cam-CAM-101/")
+        self.assertEqual(response.json()["webrtcWhepUrl"], "http://localhost:8889/cam-CAM-101/whep")
         self.assertNotIn("rtsp", str(response.json()).lower())
 
     def test_stream_status_route(self) -> None:

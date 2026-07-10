@@ -21,9 +21,9 @@ security:
   cors_allow_credentials: true
 
 mediamtx:
-  base_url: "http://localhost:9997"
-  public_hls_base_url: "http://localhost:8888"
-  public_webrtc_base_url: "http://localhost:8889"
+  base_url: "http://192.168.0.103:9997"
+  public_hls_base_url: "http://192.168.0.103:8888"
+  public_webrtc_base_url: "http://192.168.0.103:8889"
   rtsp_transport: "tcp"
   path_prefix: "cam-"
   auto_create_paths: true

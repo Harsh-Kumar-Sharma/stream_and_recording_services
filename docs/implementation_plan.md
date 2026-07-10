@@ -610,6 +610,38 @@ Status: Completed on 2026-07-10.
 
 ---
 
+## Phase 22: Real RTSP MediaMTX Source Path Setup
+
+Status: Completed on 2026-07-10.
+
+### Trigger
+
+Frontend received successful `POST /api/v1/streams/2/start` response, but live playback did not start. Python logs showed:
+
+```txt
+Fetched camera device info camera_id=CAM-02 rtsp=rtsp://admin:****@192.168.0.102:8080/h264.sdp
+Confirmed MediaMTX path camera_id=CAM-02 path=cam-CAM-02
+```
+
+The service was only generating the HLS path and URL. It was not configuring MediaMTX to pull the camera RTSP URL as a source.
+
+### Tasks
+
+- [x] Update `MediaMtxService.ensure_stream_path` to configure MediaMTX path source using the camera RTSP URL.
+- [x] Use MediaMTX API `PATCH /v3/config/paths/patch/{path}` for existing paths.
+- [x] Use MediaMTX API `POST /v3/config/paths/add/{path}` when the path does not exist.
+- [x] Keep RTSP credentials masked in logs.
+- [x] Add tests for patch existing path and add missing path behavior.
+- [x] Document LAN HLS base URL requirement for React clients on another machine.
+
+### Acceptance Check
+
+- [x] Start stream configures MediaMTX with the real RTSP source before returning HLS URL.
+- [x] React must use returned `streamUrl`.
+- [x] For LAN frontend, `MEDIA_SERVICE__MEDIAMTX__PUBLIC_HLS_BASE_URL` must point to reachable server IP such as `http://192.168.0.103:8888`.
+
+---
+
 ## 3. Final Implementation Checklist
 
 - [x] FastAPI project created.
@@ -631,4 +663,5 @@ Status: Completed on 2026-07-10.
 - [x] Windows Python version preflight documented.
 - [x] Recording service env on/off switch implemented.
 - [x] React integration handoff documented.
+- [x] MediaMTX real RTSP source path setup implemented.
 - [ ] Audit checklist passed.
