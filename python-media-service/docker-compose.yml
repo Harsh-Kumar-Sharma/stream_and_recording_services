@@ -15,6 +15,7 @@ services:
       MEDIA_SERVICE__RECORDING__SEGMENT_DURATION_SECONDS: 5
       MEDIA_SERVICE__MEDIAMTX__BASE_URL: http://mediamtx:9997
       MEDIA_SERVICE__MEDIAMTX__PUBLIC_HLS_BASE_URL: http://localhost:8888
+      MEDIA_SERVICE__MEDIAMTX__PUBLIC_WEBRTC_BASE_URL: http://localhost:8889
     volumes:
       - ./config/config.yaml:/app/config/config.yaml:ro
       - ./storage/recordings:/data/recordings

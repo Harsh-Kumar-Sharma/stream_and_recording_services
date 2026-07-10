@@ -37,3 +37,21 @@ async def camera_device_info(camera_id: str, authorization: str | None = Header(
         "gantryId": "GANTRY-MOCK",
         "laneId": "LANE-MOCK",
     }
+
+
+@app.get("/api/devices/stream/all")
+async def stream_devices(authorization: str | None = Header(default=None)):
+    if not _is_valid_token(authorization):
+        return JSONResponse(status_code=401, content={"status": False, "message": "Invalid or expired token"})
+
+    return [
+        {
+            "deviceId": 101,
+            "customDeviceId": "CAM-101\n",
+            "ipAddress": "mediamtx\n",
+            "username": "mock-user",
+            "password": "mock-pass",
+            "portNumber": 8554,
+            "rtspUrl": "rtsp://mediamtx:8554/cam-CAM-101",
+        }
+    ]

@@ -14,7 +14,7 @@ class MediaMtxServiceTests(unittest.TestCase):
         url = service.hls_url_for_path(path)
 
         self.assertEqual(path, "cam-CAM-101")
-        self.assertEqual(url, "https://media.example.com/cam-CAM-101/index.m3u8")
+        self.assertEqual(url, "http://localhost:8888/cam-CAM-101/index.m3u8")
 
 
 if __name__ == "__main__":

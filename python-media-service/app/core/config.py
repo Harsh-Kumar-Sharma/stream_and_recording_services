@@ -22,7 +22,7 @@ class AppConfig(BaseModel):
 class JavaApiConfig(BaseModel):
     base_url: str
     session_validate_endpoint: str
-    camera_device_info_endpoint: str
+    camera_stream_all_endpoint: str = "/api/devices/stream/all"
     timeout_seconds: float
     retry_count: int = Field(ge=0)
 

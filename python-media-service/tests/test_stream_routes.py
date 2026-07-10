@@ -22,7 +22,7 @@ class StubStreamState:
             "cameraName": "Gantry Camera",
             "streamStatus": "started",
             "streamType": "hls",
-            "streamUrl": "https://media.example.com/cam-CAM-101/index.m3u8",
+            "streamUrl": "http://localhost:8888/cam-CAM-101/index.m3u8",
             "startedAt": "2026-07-09T10:00:00+00:00",
             "lastError": None,
         }
@@ -55,7 +55,7 @@ class StreamRouteTests(unittest.TestCase):
         response = TestClient(build_app()).post("/api/v1/streams/CAM-101/start")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["streamUrl"], "https://media.example.com/cam-CAM-101/index.m3u8")
+        self.assertEqual(response.json()["streamUrl"], "http://localhost:8888/cam-CAM-101/index.m3u8")
         self.assertNotIn("rtsp", str(response.json()).lower())
 
     def test_stream_status_route(self) -> None:

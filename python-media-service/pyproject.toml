@@ -1,0 +1,6 @@
+[project]
+name = "python-media-service"
+version = "0.1.0"
+description = "FastAPI media-control backend for CCTV live streaming, recording, and playback."
+requires-python = ">=3.11,<3.14"
+

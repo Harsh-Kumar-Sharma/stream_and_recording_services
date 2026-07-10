@@ -37,8 +37,14 @@ class JavaApiClient:
         return session
 
     async def get_camera_device_info(self, camera_id: str, token: str) -> CameraDeviceInfo:
-        endpoint = self.settings.java_api.camera_device_info_endpoint.format(camera_id=camera_id)
-        data = await self._request_json("GET", endpoint, token)
+        endpoint = self.settings.java_api.camera_stream_all_endpoint
+        data = await self._request_json_value("GET", endpoint, token)
+
+        if isinstance(data, list):
+            return self._camera_from_stream_devices(camera_id, data)
+
+        if not isinstance(data, dict):
+            raise JavaApiError("Invalid camera device info response")
 
         try:
             return CameraDeviceInfo.model_validate(data)
@@ -46,6 +52,12 @@ class JavaApiClient:
             raise JavaApiError("Invalid camera device info response") from exc
 
     async def _request_json(self, method: str, endpoint: str, token: str) -> dict[str, Any]:
+        data = await self._request_json_value(method, endpoint, token)
+        if not isinstance(data, dict):
+            raise JavaApiError("Java API returned unexpected response")
+        return data
+
+    async def _request_json_value(self, method: str, endpoint: str, token: str) -> Any:
         url = f"{self.base_url}{endpoint}"
         headers = {"Authorization": f"Bearer {token}"}
         timeout = self.settings.java_api.timeout_seconds
@@ -75,7 +87,7 @@ class JavaApiClient:
 
         raise AuthServiceUnavailableError() from last_error
 
-    def _handle_response(self, response: httpx.Response) -> dict[str, Any]:
+    def _handle_response(self, response: httpx.Response) -> Any:
         if response.status_code in (401, 403):
             raise AuthTokenInvalidError()
         if response.status_code == 404:
@@ -90,6 +102,24 @@ class JavaApiClient:
         except ValueError as exc:
             raise JavaApiError("Java API returned invalid JSON") from exc
 
-        if not isinstance(data, dict):
+        if not isinstance(data, (dict, list)):
             raise JavaApiError("Java API returned unexpected response")
         return data
+
+    def _camera_from_stream_devices(self, camera_id: str, devices: list[Any]) -> CameraDeviceInfo:
+        requested_id = camera_id.strip()
+        requested_id_lower = requested_id.lower()
+
+        for item in devices:
+            if not isinstance(item, dict):
+                continue
+            try:
+                camera = CameraDeviceInfo.model_validate(item)
+            except ValidationError as exc:
+                raise JavaApiError("Invalid camera device info response") from exc
+
+            device_id = str(camera.device_id) if camera.device_id is not None else ""
+            if camera.camera_id.lower() == requested_id_lower or device_id == requested_id:
+                return camera
+
+        raise CameraNotFoundError()

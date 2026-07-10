@@ -30,7 +30,7 @@ class StreamServiceTests(unittest.TestCase):
         response = state.to_response()
 
         self.assertEqual(response["streamStatus"], "started")
-        self.assertEqual(response["streamUrl"], "https://media.example.com/cam-CAM-101/index.m3u8")
+        self.assertEqual(response["streamUrl"], "http://localhost:8888/cam-CAM-101/index.m3u8")
         self.assertNotIn("rtsp", str(response).lower())
 
     def test_stop_stream_returns_success(self) -> None:

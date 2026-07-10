@@ -10,7 +10,7 @@ Current implementation status:
 - Structured console and file logging
 - RTSP credential masking helper
 - Basic and detailed health endpoints
-- Java API client for token validation and camera device info
+- Java API client for token validation and stream-device camera info
 - Bearer token middleware for protected APIs
 - Camera service active-status validation
 - MediaMTX HLS URL/path generation
@@ -22,11 +22,35 @@ Current implementation status:
 
 ## Setup
 
+Use Python `3.11`, `3.12`, or `3.13`. Do not create the virtual environment with Python `3.14` for the current pinned dependency set; on Windows it can try to compile `pydantic-core` from source and fail with `link.exe not found`.
+
 ```powershell
 cd python-media-service
-python -m venv .venv
+.\scripts\setup.ps1
+```
+
+Manual setup:
+
+```powershell
+cd python-media-service
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe scripts\check_python_version.py
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+If you already created `.venv` with Python `3.14`, remove it and recreate it with Python `3.12`:
+
+```powershell
+Remove-Item -Recurse -Force .venv
+.\scripts\setup.ps1
+```
+
+If `py -3.12` is not available, install Python 3.12 or use another supported interpreter:
+
+```powershell
+py -0p
+.\scripts\setup.ps1 -PythonVersion 3.13
 ```
 
 ## Run
@@ -121,6 +145,14 @@ Override individual values:
 $env:MEDIA_SERVICE__APP__ENVIRONMENT="production"
 $env:MEDIA_SERVICE__JAVA_API__BASE_URL="https://api.example.com"
 ```
+
+Turn recording service on or off using environment:
+
+```powershell
+$env:MEDIA_SERVICE__RECORDING__ENABLED="false"
+```
+
+When recording is disabled, `POST /api/v1/recorders/{camera_id}/start` returns `503 RECORDING_DISABLED`. Recorder status, list, and stop endpoints remain available.
 
 ## Notes
 

@@ -5,7 +5,7 @@ from pathlib import Path
 import httpx
 
 from app.core.config import load_settings
-from app.core.exceptions import AuthServiceUnavailableError, AuthTokenInvalidError
+from app.core.exceptions import AuthServiceUnavailableError, AuthTokenInvalidError, CameraNotFoundError
 from app.services.java_client import JavaApiClient
 
 
@@ -75,6 +75,75 @@ class JavaApiClientTests(unittest.TestCase):
 
         self.assertEqual(camera.camera_id, "CAM-101")
         self.assertEqual(camera.status, "active")
+
+    def test_stream_devices_list_response_is_matched_by_custom_device_id(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            self.assertEqual(request.url.path, "/api/devices/stream/all")
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "deviceId": 2,
+                        "customDeviceId": "CAM-02\n",
+                        "ipAddress": "192.168.38\n",
+                        "username": "User1",
+                        "password": "PassWd",
+                        "portNumber": 765,
+                        "rtspUrl": "rtsp://192.168.2",
+                    },
+                    {
+                        "deviceId": 6,
+                        "customDeviceId": "CAM-06\n",
+                        "ipAddress": "192.168.32\n",
+                        "username": "User1",
+                        "password": "PassWd",
+                        "portNumber": 765,
+                        "rtspUrl": "rtsp://192.168.6",
+                    },
+                ],
+            )
+
+        client = JavaApiClient(settings_for_test(), transport=httpx.MockTransport(handler))
+        camera = asyncio.run(client.get_camera_device_info("CAM-02", "valid-token"))
+
+        self.assertEqual(camera.camera_id, "CAM-02")
+        self.assertEqual(camera.camera_name, "CAM-02")
+        self.assertEqual(camera.ip_address, "192.168.38")
+        self.assertEqual(camera.rtsp_url, "rtsp://192.168.2")
+        self.assertEqual(camera.status, "active")
+        self.assertEqual(camera.device_id, 2)
+
+    def test_stream_devices_list_response_is_matched_by_device_id(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "deviceId": 6,
+                        "customDeviceId": "CAM-06\n",
+                        "ipAddress": "192.168.32\n",
+                        "username": "User1",
+                        "password": "PassWd",
+                        "portNumber": 765,
+                        "rtspUrl": "rtsp://192.168.6",
+                    },
+                ],
+            )
+
+        client = JavaApiClient(settings_for_test(), transport=httpx.MockTransport(handler))
+        camera = asyncio.run(client.get_camera_device_info("6", "valid-token"))
+
+        self.assertEqual(camera.camera_id, "CAM-06")
+        self.assertEqual(camera.device_id, 6)
+
+    def test_stream_devices_list_missing_camera_raises_not_found(self) -> None:
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json=[])
+
+        client = JavaApiClient(settings_for_test(), transport=httpx.MockTransport(handler))
+
+        with self.assertRaises(CameraNotFoundError):
+            asyncio.run(client.get_camera_device_info("CAM-404", "valid-token"))
 
 
 if __name__ == "__main__":

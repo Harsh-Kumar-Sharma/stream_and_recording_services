@@ -23,6 +23,8 @@ The service will:
 
 Status: Completed on 2026-07-09.
 
+Update on 2026-07-10: Java stream-device integration was aligned with the Java developer contract: `GET /api/devices/stream/all` returns all stream devices and Python selects the requested camera by trimmed `customDeviceId` or numeric `deviceId`.
+
 ### Tasks
 
 - [x] Create project folder `python-media-service`.
@@ -115,7 +117,7 @@ Status: Completed on 2026-07-09.
 
 - [x] Create `app/services/java_client.py`.
 - [x] Implement token validation API call.
-- [x] Implement camera device info API call.
+- [x] Implement stream-device list API call for camera RTSP/device lookup.
 - [x] Add timeout handling.
 - [x] Add retry handling.
 - [x] Add clear error mapping.
@@ -124,7 +126,7 @@ Status: Completed on 2026-07-09.
 
 ```txt
 GET /api/auth/session/validate
-GET /api/cameras/{camera_id}/device-info
+GET /api/devices/stream/all
 ```
 
 ### Acceptance Check
@@ -132,7 +134,7 @@ GET /api/cameras/{camera_id}/device-info
 - [x] Valid token response is parsed.
 - [x] Invalid token response is handled.
 - [x] Java API timeout returns service unavailable error.
-- [x] Camera info response is parsed.
+- [x] Stream-device list response is parsed, trimmed, and matched to the requested camera.
 
 ---
 
@@ -193,14 +195,14 @@ Status: Completed on 2026-07-09.
 ### Tasks
 
 - [x] Create `app/services/camera_service.py`.
-- [x] Get camera device info from Java API.
+- [x] Get camera device info from Java API stream-device list.
 - [x] Validate camera status is active.
 - [x] Mask RTSP URL in logs.
 - [x] Return clean internal camera object.
 
 ### Acceptance Check
 
-- [x] Camera info is fetched by camera ID.
+- [x] Camera info is selected by `customDeviceId` or `deviceId`.
 - [x] Inactive camera returns proper error.
 - [x] RTSP URL is only used internally.
 
@@ -370,6 +372,7 @@ GET  /api/v1/recorders
 - [x] Start recording validates token.
 - [x] Start recording gets RTSP info from Java.
 - [x] Start recording creates background FFmpeg worker.
+- [x] Start recording is blocked with `RECORDING_DISABLED` when `recording.enabled` is false.
 - [x] Stop recording terminates worker.
 - [x] Status returns PID and recording state.
 
@@ -533,13 +536,66 @@ Status: Completed on 2026-07-09.
 
 ---
 
+## Phase 19: Windows Local Setup Compatibility
+
+Status: Completed on 2026-07-10.
+
+### Trigger
+
+Local dependency installation was attempted with Python 3.14.5:
+
+```txt
+pydantic-core build failed because MSVC link.exe was not found
+```
+
+The root cause is that the current pinned dependency set can fall back to a native build path on Python 3.14 for Windows.
+
+### Tasks
+
+- [x] Document supported local interpreter range as Python >=3.11,<3.14.
+- [x] Update README setup commands to create the virtual environment with `py -3.12`.
+- [x] Add `scripts/check_python_version.py` to fail fast before `pip install`.
+- [x] Add `scripts/setup.ps1` so Windows setup checks the Python version before installing dependencies.
+- [x] Add `pyproject.toml` with `requires-python = ">=3.11,<3.14"`.
+- [x] Add requirements note so the dependency pin file carries the interpreter constraint.
+- [x] Update PRD/TRD/audit docs with the local setup compatibility rule.
+
+### Acceptance Check
+
+- [x] Python 3.14 produces a clear unsupported-version message before dependency installation.
+- [x] Existing Python 3.14 virtual environments are detected before `pip install -r requirements.txt`.
+- [x] Docs tell developers to use Python 3.11, 3.12, or 3.13.
+
+---
+
+## Phase 20: Recording Service Environment Toggle
+
+Status: Completed on 2026-07-10.
+
+### Tasks
+
+- [x] Use `recording.enabled` as the runtime recording service on/off switch.
+- [x] Support environment override through `MEDIA_SERVICE__RECORDING__ENABLED=false`.
+- [x] Block recording start with `503 RECORDING_DISABLED` when disabled.
+- [x] Keep recorder status, list, and stop endpoints available for operator visibility.
+- [x] Add tests for disabled recording start and list response state.
+- [x] Update README, `.env.example`, PRD, TRD, implementation plan, and audit docs.
+
+### Acceptance Check
+
+- [x] Recording can be turned off using environment without code changes.
+- [x] Disabled recording does not start FFmpeg workers.
+- [x] Recording can be turned back on by setting `MEDIA_SERVICE__RECORDING__ENABLED=true`.
+
+---
+
 ## 3. Final Implementation Checklist
 
 - [x] FastAPI project created.
 - [x] YAML config working.
 - [x] Auth middleware working.
 - [x] Java token validation integrated.
-- [x] Java camera info API integrated.
+- [x] Java stream-device camera info API integrated.
 - [x] MediaMTX stream setup working.
 - [x] Stream APIs working.
 - [x] FFmpeg recording worker working.
@@ -550,4 +606,6 @@ Status: Completed on 2026-07-09.
 - [x] RTSP masking implemented.
 - [x] Docker setup ready.
 - [x] README complete.
+- [x] Windows Python version preflight documented.
+- [x] Recording service env on/off switch implemented.
 - [ ] Audit checklist passed.

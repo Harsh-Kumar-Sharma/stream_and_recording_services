@@ -56,7 +56,7 @@ MediaMTX / FFmpeg / Video Storage
 ## 3.1 Backend Framework
 
 ```txt
-Python 3.11+
+Python >=3.11,<3.14
 FastAPI
 Uvicorn
 Pydantic
@@ -77,6 +77,8 @@ python-multipart
 aiofiles
 psutil
 ```
+
+Windows local setup must use Python 3.11, 3.12, or 3.13 for the current pinned dependency set. Python 3.14 can force native dependency builds, especially `pydantic-core`, and fail without Visual Studio C++ Build Tools. The repository includes `scripts/setup.ps1`, `scripts/check_python_version.py`, and `pyproject.toml` with `requires-python = ">=3.11,<3.14"` to make this constraint explicit before dependency installation.
 
 Optional future packages:
 
@@ -138,6 +140,7 @@ Purpose:
 - Read RTSP camera stream
 - Write segmented `.mp4` recordings
 - Run as background worker process
+- Support runtime on/off control through `recording.enabled` or `MEDIA_SERVICE__RECORDING__ENABLED`
 
 Default recording mode:
 
@@ -146,6 +149,14 @@ Default recording mode:
 ```
 
 This avoids CPU-heavy re-encoding.
+
+Recording disable behavior:
+
+```txt
+MEDIA_SERVICE__RECORDING__ENABLED=false
+```
+
+When disabled, `POST /api/v1/recorders/{camera_id}/start` must return `503` with error code `RECORDING_DISABLED`. Status, list, and stop endpoints remain available.
 
 ---
 
@@ -229,7 +240,7 @@ Python will call Java for:
 
 ```txt
 Token/session validation
-Camera device information
+Stream device information
 ```
 
 Python will not directly manage users or camera master data.
@@ -275,12 +286,12 @@ Expected invalid response:
 
 ---
 
-## 5.2 Camera Device Info API
+## 5.2 Stream Devices API
 
 Endpoint:
 
 ```txt
-GET /api/cameras/{camera_id}/device-info
+GET /api/devices/stream/all
 ```
 
 Headers:
@@ -292,17 +303,20 @@ Authorization: Bearer <token>
 Expected response:
 
 ```json
-{
-  "cameraId": "CAM-101",
-  "cameraName": "Gantry 1 Lane 1 Camera",
-  "rtspUrl": "rtsp://username:password@192.168.1.10:554/stream1",
-  "ipAddress": "192.168.1.10",
-  "status": "active",
-  "siteId": "SITE-01",
-  "gantryId": "GANTRY-01",
-  "laneId": "LANE-01"
-}
+[
+  {
+    "deviceId": 2,
+    "customDeviceId": "CAM-02\n",
+    "ipAddress": "192.168.38\n",
+    "username": "User1",
+    "password": "PassWd",
+    "portNumber": 765,
+    "rtspUrl": "rtsp://192.168.2"
+  }
+]
 ```
+
+Python selects the requested camera by trimmed `customDeviceId` or numeric `deviceId`. Java string values may include newline characters, so Python normalizes them before using camera ID, IP address, and RTSP URL values.
 
 ---
 
@@ -346,7 +360,7 @@ Start stream response:
   "cameraId": "CAM-101",
   "streamStatus": "started",
   "streamType": "hls",
-  "streamUrl": "https://media.example.com/cam-CAM-101/index.m3u8"
+  "streamUrl": "http://localhost:8888/cam-CAM-101/index.m3u8"
 }
 ```
 
@@ -394,7 +408,7 @@ Search response:
       "fileName": "CAM-101_20260709_100000.mp4",
       "startTime": "2026-07-09T10:00:00",
       "endTime": "2026-07-09T10:15:00",
-      "playbackUrl": "https://media.example.com/api/v1/playback/CAM-101/file?path=encoded"
+      "playbackUrl": "http://localhost:8000/api/v1/playback/CAM-101/file?path=encoded"
     }
   ]
 }
@@ -460,7 +474,7 @@ cam-CAM-101
 Example:
 
 ```txt
-https://media.example.com/cam-CAM-101/index.m3u8
+http://localhost:8888/cam-CAM-101/index.m3u8
 ```
 
 ## 8.3 MediaMTX Config
@@ -526,7 +540,7 @@ app:
 java_api:
   base_url: "http://java-api-server:8080"
   session_validate_endpoint: "/api/auth/session/validate"
-  camera_device_info_endpoint: "/api/cameras/{camera_id}/device-info"
+  camera_stream_all_endpoint: "/api/devices/stream/all"
   timeout_seconds: 5
   retry_count: 2
 
@@ -536,9 +550,9 @@ security:
   allow_docs_in_production: false
 
 mediamtx:
-  base_url: "http://mediamtx:9997"
-  public_hls_base_url: "https://media.example.com"
-  public_webrtc_base_url: "https://media.example.com"
+  base_url: "http://localhost:9997"
+  public_hls_base_url: "http://localhost:8888"
+  public_webrtc_base_url: "http://localhost:8889"
   rtsp_transport: "tcp"
   path_prefix: "cam-"
   auto_create_paths: true
@@ -722,7 +736,7 @@ Implemented foundation:
 - `python-media-service/app/core/config.py` loads and validates `config/config.yaml`.
 - `python-media-service/app/core/logging.py` configures console/file logging and masks RTSP credentials.
 - `python-media-service/app/api/routes/health.py` exposes `/health` and `/api/v1/health`.
-- `python-media-service/app/services/java_client.py` validates bearer tokens and fetches camera device info from Java.
+- `python-media-service/app/services/java_client.py` validates bearer tokens and fetches stream-device camera info from Java.
 - `python-media-service/app/middleware/auth_middleware.py` protects non-public APIs and maps auth errors.
 - `python-media-service/app/services/camera_service.py` validates active camera status and keeps RTSP data internal.
 - `python-media-service/app/services/mediamtx_service.py` generates MediaMTX paths and HLS URLs from YAML config.

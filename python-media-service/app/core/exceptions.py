@@ -41,6 +41,11 @@ class RecordingAlreadyRunningError(MediaServiceError):
         super().__init__(message, "RECORDING_ALREADY_RUNNING", 409)
 
 
+class RecordingDisabledError(MediaServiceError):
+    def __init__(self, message: str = "Recording service is disabled") -> None:
+        super().__init__(message, "RECORDING_DISABLED", 503)
+
+
 class RecordingNotRunningError(MediaServiceError):
     def __init__(self, message: str = "Recording is not running") -> None:
         super().__init__(message, "RECORDING_NOT_RUNNING", 404)

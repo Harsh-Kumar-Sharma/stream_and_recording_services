@@ -6,9 +6,9 @@ app:
   log_level: "INFO"
 
 java_api:
-  base_url: "http://java-api-server:8080"
+  base_url: "http://192.168.0.101:8080"
   session_validate_endpoint: "/api/auth/session/validate"
-  camera_device_info_endpoint: "/api/cameras/{camera_id}/device-info"
+  camera_stream_all_endpoint: "/api/devices/stream/all"
   timeout_seconds: 5
   retry_count: 2
 
@@ -21,16 +21,16 @@ security:
   cors_allow_credentials: true
 
 mediamtx:
-  base_url: "http://mediamtx:9997"
-  public_hls_base_url: "https://media.example.com"
-  public_webrtc_base_url: "https://media.example.com"
+  base_url: "http://localhost:9997"
+  public_hls_base_url: "http://localhost:8888"
+  public_webrtc_base_url: "http://localhost:8889"
   rtsp_transport: "tcp"
   path_prefix: "cam-"
   auto_create_paths: true
   start_on_demand: true
 
 recording:
-  enabled: true
+  enabled: false
   storage_root: "./storage/recordings"
   segment_duration_seconds: 900
   file_extension: "mp4"

@@ -1,5 +1,5 @@
 from app.core.config import Settings
-from app.core.exceptions import MediaServiceError
+from app.core.exceptions import MediaServiceError, RecordingDisabledError
 from app.schemas.recorder import RecordingState
 from app.services.camera_service import CameraService
 from app.services.storage_service import StorageService
@@ -21,6 +21,9 @@ class RecordingService:
         self.storage_service = storage_service or StorageService(settings)
 
     async def start_recording(self, camera_id: str, bearer_token: str) -> RecordingState:
+        if not self.settings.recording.enabled:
+            raise RecordingDisabledError()
+
         if self.process_manager.active_count() >= self.settings.worker.max_recording_workers:
             raise MediaServiceError("Maximum recording worker limit reached", "MAX_RECORDING_WORKERS_REACHED", 429)
 
@@ -58,6 +61,7 @@ class RecordingService:
         states = [state.to_response() for state in self.process_manager.list_states()]
         return {
             "status": True,
+            "recordingEnabled": self.settings.recording.enabled,
             "recorders": states,
             "count": len(states),
         }

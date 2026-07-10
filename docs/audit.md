@@ -136,15 +136,17 @@ Checklist:
 Expected endpoint:
 
 ```txt
-GET /api/cameras/{camera_id}/device-info
+GET /api/devices/stream/all
 ```
 
 Checklist:
 
 - [x] Python calls this endpoint after successful token validation.
 - [x] Python receives RTSP URL.
-- [x] Python receives camera ID/name/IP/status.
-- [x] Python checks camera is active.
+- [x] Python receives device ID, custom device ID, IP, port, username/password, and RTSP URL.
+- [x] Python trims newline/whitespace from Java string fields.
+- [x] Python selects the requested camera by `customDeviceId` or `deviceId`.
+- [x] Python defaults Java stream devices to active because this endpoint does not send a status field.
 - [x] Python does not return RTSP URL to frontend.
 - [x] Python masks RTSP URL in logs.
 
@@ -182,7 +184,7 @@ Expected response example:
   "cameraId": "CAM-101",
   "streamStatus": "started",
   "streamType": "hls",
-  "streamUrl": "https://media.example.com/cam-CAM-101/index.m3u8"
+  "streamUrl": "http://localhost:8888/cam-CAM-101/index.m3u8"
 }
 ```
 
@@ -213,7 +215,7 @@ cam-CAM-101
 HLS URL check:
 
 ```txt
-https://media.example.com/cam-CAM-101/index.m3u8
+http://localhost:8888/cam-CAM-101/index.m3u8
 ```
 
 ---
@@ -238,6 +240,7 @@ Checklist:
 - [x] Start recording validates token.
 - [x] Start recording gets camera info from Java.
 - [x] Start recording starts background worker.
+- [x] Start recording is blocked when recording is disabled by environment.
 - [x] Start recording returns immediately.
 - [x] Duplicate recording worker for same camera is blocked.
 - [x] Stop recording gracefully terminates FFmpeg.
@@ -443,16 +446,17 @@ After audit, fill this section.
 - Environment overrides are supported with MEDIA_SERVICE__SECTION__KEY variables.
 - Structured console/file logging is configured.
 - RTSP credential masking utility is implemented and covered by a unit test.
-- Java API client validates tokens, fetches camera device info, handles timeout/retry behavior, and maps errors.
+- Java API client validates tokens, fetches stream-device camera info, handles timeout/retry behavior, and maps errors.
 - Bearer token middleware rejects missing/invalid tokens, returns 503 when Java auth is unavailable, and attaches session info to request state.
 - Auth middleware and Java client behavior are covered by unit tests with mocks.
-- Camera service fetches Java camera info, rejects inactive cameras, masks RTSP in logs, and keeps RTSP out of API responses.
+- Camera service fetches Java stream-device camera info, rejects inactive cameras when a status is present, masks RTSP in logs, and keeps RTSP out of API responses.
 - MediaMTX service generates `cam-{camera_id}` paths and HLS URLs from YAML config.
 - Stream start, stop, status, and list APIs are mounted under `/api/v1/streams`.
 - Stream service and route behavior are covered by tests.
 - FFmpeg command builder creates segmented MP4 recording commands from YAML config.
 - Process manager tracks per-camera FFmpeg workers, blocks duplicate starts, stops workers, monitors exits, and restarts failed workers when configured.
 - Recorder start, stop, status, and list APIs are mounted under `/api/v1/recorders`.
+- Recorder start respects `recording.enabled` / `MEDIA_SERVICE__RECORDING__ENABLED` and returns `RECORDING_DISABLED` when turned off.
 - Recorder worker, process manager, recording service, and recorder route behavior are covered by tests.
 - Playback search, date-wise listing, and safe MP4 serving APIs are mounted under `/api/v1/playback`.
 - Playback service returns encoded relative file tokens, blocks path traversal, and never returns absolute storage paths.
@@ -465,13 +469,14 @@ After audit, fill this section.
 - `docker compose up -d` started Python service, mock Java API, and MediaMTX.
 - Runtime health returned `mediamtx.reachable=true` and `javaApi.reachable=true` with the mock Java API.
 - FFmpeg is installed in the Python container.
-- Mock Java API validated `mock-valid-token` and returned MediaMTX RTSP camera info.
+- Mock Java API validated `mock-valid-token` and returned MediaMTX RTSP camera info through the stream-device list contract.
 - Synthetic FFmpeg publisher streamed test video to `rtsp://mediamtx:8554/cam-CAM-101`.
 - Stream API returned `http://localhost:8888/cam-CAM-101/index.m3u8`.
 - HLS playlist fetch succeeded through MediaMTX.
 - Recorder API captured the synthetic RTSP stream and created an MP4 segment on mounted storage.
 - Playback search and file serving returned the recorded MP4 through the Python API.
 - README contains Windows PowerShell setup and run commands.
+- README, `pyproject.toml`, requirements comments, `scripts/setup.ps1`, and `scripts/check_python_version.py` now document/enforce Python >=3.11,<3.14 for local Windows setup.
 ```
 
 ### Missing Items
@@ -484,7 +489,7 @@ After audit, fill this section.
 ### Bugs Found
 
 ```txt
-- None found in completed foundation/auth/stream/recorder/playback/storage/deployment-hardening slices.
+- Windows local setup with Python 3.14.5 caused `pydantic-core` to build from source and fail because MSVC `link.exe` was unavailable. Fixed by documenting and preflighting the supported Python range: >=3.11,<3.14, plus adding a PowerShell setup script that checks existing virtual environments before installing dependencies.
 ```
 
 ### Security Issues

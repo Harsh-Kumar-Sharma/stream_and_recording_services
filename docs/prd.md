@@ -88,14 +88,37 @@ Python FastAPI must get camera device information from Java API server.
 
 Required camera data:
 
-- Camera ID
-- Camera name
+- Camera ID from `customDeviceId`
+- Camera name derived from `customDeviceId` when Java does not send a separate name
 - RTSP URL
 - IP address
-- Camera status
-- Site ID
-- Gantry ID
-- Lane ID
+- Java device ID
+- Port number
+- Username/password for internal use only if needed by future RTSP construction
+
+Current Java stream-device endpoint:
+
+```txt
+GET /api/devices/stream/all
+```
+
+Expected Java response shape:
+
+```json
+[
+  {
+    "deviceId": 2,
+    "customDeviceId": "CAM-02\n",
+    "ipAddress": "192.168.38\n",
+    "username": "User1",
+    "password": "PassWd",
+    "portNumber": 765,
+    "rtspUrl": "rtsp://192.168.2"
+  }
+]
+```
+
+Python must trim whitespace/newline characters from Java string fields and select the requested camera by matching `customDeviceId` or `deviceId`.
 
 Python must never expose raw RTSP URL to the React frontend.
 
@@ -145,6 +168,8 @@ FFmpeg will:
 - Save recordings camera-wise and date-wise
 - Restart on failure based on configuration
 
+Recording must be controllable through environment configuration. If `MEDIA_SERVICE__RECORDING__ENABLED=false`, Python must reject new recording starts with a clear disabled response while keeping recorder status/list/stop APIs available.
+
 ---
 
 ### 5.5 Playback
@@ -175,7 +200,8 @@ Configuration should include:
 - App host/port
 - Java API base URL
 - Java session validation endpoint
-- Java camera device info endpoint
+- Java stream devices endpoint
+- Recording enabled/disabled flag
 - MediaMTX settings
 - FFmpeg path and recording settings
 - Worker limits
@@ -485,7 +511,7 @@ The project is successful when:
 
 ## 11. Current Implementation Status
 
-Updated on 2026-07-09.
+Updated on 2026-07-10.
 
 Completed:
 
@@ -493,9 +519,9 @@ Completed:
 - YAML configuration exists with app, Java API, security, MediaMTX, recording, worker, storage, and disabled future database sections.
 - Basic `/health` and detailed `/api/v1/health` endpoints exist.
 - Structured logging and RTSP credential masking are implemented.
-- Java API client validates bearer tokens and fetches camera device info.
+- Java API client validates bearer tokens and fetches the Java stream-device list from `/api/devices/stream/all`.
 - Bearer token middleware protects non-public routes and attaches session info to request state.
-- Camera service validates active camera status and keeps RTSP URLs internal.
+- Camera service selects camera info by `customDeviceId` or `deviceId`, normalizes newline-padded Java values, and keeps RTSP URLs internal.
 - MediaMTX service generates `cam-{camera_id}` paths and public HLS URLs from YAML config.
 - Stream start, stop, status, and list APIs are available under `/api/v1/streams`.
 - FFmpeg command builder creates segmented MP4 recording commands from YAML config.
@@ -509,6 +535,8 @@ Completed:
 - Docker image build and compose runtime verification passed.
 - Python service and MediaMTX run together in Docker, and Python health reports MediaMTX reachable.
 - Local mock Java API plus synthetic FFmpeg RTSP stream verified stream start, HLS playlist generation, recording, MP4 storage, playback search, and playback file serving.
+- Windows local setup now explicitly requires Python 3.11, 3.12, or 3.13 and includes PowerShell/preflight version checks to avoid Python 3.14 native dependency build failures.
+- Recording start can be disabled by environment using `MEDIA_SERVICE__RECORDING__ENABLED=false`.
 
 Pending:
 

@@ -1,7 +1,9 @@
 import asyncio
+import copy
 import unittest
 from pathlib import Path
 
+from app.core.exceptions import RecordingDisabledError
 from app.core.config import load_settings
 from app.schemas.recorder import RecordingState
 from app.schemas.stream import InternalCamera
@@ -47,7 +49,9 @@ class StubProcessManager:
 
 
 def settings_for_test():
-    return load_settings(Path(__file__).resolve().parents[1] / "config" / "config.yaml")
+    settings = load_settings(Path(__file__).resolve().parents[1] / "config" / "config.yaml")
+    settings.recording.enabled = True
+    return settings
 
 
 class RecordingServiceTests(unittest.TestCase):
@@ -69,6 +73,23 @@ class RecordingServiceTests(unittest.TestCase):
         response = asyncio.run(service.get_status("CAM-404"))
 
         self.assertEqual(response["recordingStatus"], "not_running")
+
+    def test_start_recording_is_blocked_when_recording_disabled(self) -> None:
+        settings = copy.deepcopy(settings_for_test())
+        settings.recording.enabled = False
+        service = RecordingService(settings, camera_service=StubCameraService(), process_manager=StubProcessManager())
+
+        with self.assertRaises(RecordingDisabledError):
+            asyncio.run(service.start_recording("CAM-101", "token"))
+
+    def test_list_recordings_reports_recording_enabled_flag(self) -> None:
+        settings = copy.deepcopy(settings_for_test())
+        settings.recording.enabled = False
+        service = RecordingService(settings, camera_service=StubCameraService(), process_manager=StubProcessManager())
+
+        response = asyncio.run(service.list_recordings())
+
+        self.assertFalse(response["recordingEnabled"])
 
 
 if __name__ == "__main__":
