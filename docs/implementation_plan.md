@@ -113,10 +113,12 @@ Status: Completed on 2026-07-09.
 
 Status: Completed on 2026-07-09.
 
+Update on 2026-07-10: Java session validation call is temporarily commented out for development. `validate_token` returns a hardcoded valid admin session. Stream-device camera lookup still calls Java.
+
 ### Tasks
 
 - [x] Create `app/services/java_client.py`.
-- [x] Implement token validation API call.
+- [x] Temporarily bypass token validation API call with hardcoded valid session.
 - [x] Implement stream-device list API call for camera RTSP/device lookup.
 - [x] Add timeout handling.
 - [x] Add retry handling.
@@ -125,15 +127,15 @@ Status: Completed on 2026-07-09.
 ### Required Java APIs
 
 ```txt
-GET /api/auth/session/validate
+GET /api/auth/session/validate  # temporarily bypassed in Python
 GET /api/devices/stream/all
 ```
 
 ### Acceptance Check
 
-- [x] Valid token response is parsed.
-- [x] Invalid token response is handled.
-- [x] Java API timeout returns service unavailable error.
+- [x] Any bearer token produces a hardcoded valid development session.
+- [ ] Restore valid/invalid token response handling before production.
+- [ ] Restore Java auth timeout handling before production.
 - [x] Stream-device list response is parsed, trimmed, and matched to the requested camera.
 
 ---
@@ -147,7 +149,7 @@ Status: Completed on 2026-07-09.
 - [x] Create `app/middleware/auth_middleware.py`.
 - [x] Read `Authorization` header.
 - [x] Validate `Bearer <token>` format.
-- [x] Call Java API validation endpoint.
+- [x] Use Java client validation hook; currently hardcoded pass for development.
 - [x] Attach user/session info to request state.
 - [x] Skip auth for `/health` and docs if configured.
 
@@ -183,8 +185,8 @@ Java unavailable:
 ### Acceptance Check
 
 - [x] Protected APIs reject missing token.
-- [x] Protected APIs reject invalid token.
-- [x] Protected APIs continue when Java validates token.
+- [ ] Protected APIs reject invalid token after Java auth is restored.
+- [x] Protected APIs continue when bearer format is valid during development bypass.
 
 ---
 
@@ -589,12 +591,32 @@ Status: Completed on 2026-07-10.
 
 ---
 
+## Phase 21: React Integration Handoff
+
+Status: Completed on 2026-07-10.
+
+### Tasks
+
+- [x] Add `docs/react_integration_guide.md` for React developer handoff.
+- [x] Document Python API base URL, auth header, camera ID usage, stream APIs, recording APIs, playback APIs, and HLS playback.
+- [x] Document temporary hardcoded auth bypass and production restore warning.
+- [x] Document `RECORDING_DISABLED` handling for React controls.
+
+### Acceptance Check
+
+- [x] React developer can integrate live HLS playback using returned `streamUrl`.
+- [x] React developer can start/stop recording and handle disabled recording mode.
+- [x] React developer can search and play MP4 playback files using returned `playbackUrl`.
+
+---
+
 ## 3. Final Implementation Checklist
 
 - [x] FastAPI project created.
 - [x] YAML config working.
 - [x] Auth middleware working.
-- [x] Java token validation integrated.
+- [x] Temporary hardcoded auth pass enabled for development.
+- [ ] Java token validation restored after temporary hardcoded auth bypass.
 - [x] Java stream-device camera info API integrated.
 - [x] MediaMTX stream setup working.
 - [x] Stream APIs working.
@@ -608,4 +630,5 @@ Status: Completed on 2026-07-10.
 - [x] README complete.
 - [x] Windows Python version preflight documented.
 - [x] Recording service env on/off switch implemented.
+- [x] React integration handoff documented.
 - [ ] Audit checklist passed.

@@ -56,7 +56,8 @@ Checklist:
 - [x] Stream API is exposed from Python.
 - [x] Playback API is exposed from Python.
 - [x] Recorder API is exposed from Python.
-- [x] Java is called only for token validation and camera info.
+- [x] Java is called for camera info.
+- [ ] Java token validation is temporarily bypassed and must be restored before production.
 - [ ] MediaMTX handles live stream output.
 - [x] FFmpeg handles recording output.
 
@@ -68,11 +69,11 @@ Checklist:
 
 - [x] Middleware checks `Authorization` header.
 - [x] Middleware requires `Bearer <token>` format.
-- [x] Middleware calls Java session validation API.
-- [x] Valid token allows request.
-- [x] Invalid token returns 401.
+- [ ] Middleware calls Java session validation API. Temporarily bypassed on 2026-07-10.
+- [x] Any Bearer-format token allows request during development bypass.
+- [ ] Invalid token returns 401 after Java auth is restored.
 - [x] Missing token returns 401.
-- [x] Java auth service down returns 503.
+- [ ] Java auth service down returns 503 after Java auth is restored.
 - [x] User/session data is attached to request state if needed.
 
 ### Error Response Check
@@ -106,7 +107,7 @@ Java unavailable response:
 
 Status:
 
-- [x] Error responses match expected format.
+- [ ] Invalid-token and Java-auth-unavailable responses are paused while hardcoded auth pass is enabled.
 
 ---
 
@@ -356,7 +357,7 @@ Checklist:
 - [x] `storage` section exists.
 - [x] `database` section exists.
 - [x] `database.enabled` is false by default.
-- [x] No important value is hardcoded in Python code.
+- [ ] No important value is hardcoded in Python code. Auth currently has a temporary hardcoded development session and must be restored before production.
 
 ---
 

@@ -443,10 +443,18 @@ Middleware behavior:
 ```txt
 1. Check Authorization header.
 2. Validate Bearer format.
-3. Call Java validation API.
-4. Continue request if valid.
-5. Return 401 if invalid.
-6. Return 503 if Java auth service is unavailable.
+3. Temporarily return hardcoded development session from JavaApiClient.validate_token.
+4. Continue request if Bearer format is valid.
+5. Restore Java validation API call before production.
+```
+
+Production restore behavior:
+
+```txt
+1. Call Java validation API.
+2. Continue request if valid.
+3. Return 401 if invalid.
+4. Return 503 if Java auth service is unavailable.
 ```
 
 ---
@@ -736,7 +744,7 @@ Implemented foundation:
 - `python-media-service/app/core/config.py` loads and validates `config/config.yaml`.
 - `python-media-service/app/core/logging.py` configures console/file logging and masks RTSP credentials.
 - `python-media-service/app/api/routes/health.py` exposes `/health` and `/api/v1/health`.
-- `python-media-service/app/services/java_client.py` validates bearer tokens and fetches stream-device camera info from Java.
+- `python-media-service/app/services/java_client.py` temporarily hardcodes auth pass for development and fetches stream-device camera info from Java.
 - `python-media-service/app/middleware/auth_middleware.py` protects non-public APIs and maps auth errors.
 - `python-media-service/app/services/camera_service.py` validates active camera status and keeps RTSP data internal.
 - `python-media-service/app/services/mediamtx_service.py` generates MediaMTX paths and HLS URLs from YAML config.

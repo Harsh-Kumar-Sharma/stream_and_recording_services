@@ -67,6 +67,14 @@ Python gets camera RTSP/device info from Java API.
 
 Python FastAPI must validate every protected request using the bearer token from the frontend.
 
+Current development note:
+
+```txt
+Java session validation is temporarily bypassed in Python.
+Any request with a valid Bearer header format receives a hardcoded development admin session.
+This must be restored before production.
+```
+
 Expected flow:
 
 ```txt
@@ -79,6 +87,7 @@ Expected flow:
 ```
 
 Python will not validate JWT locally in the current scope.
+Python also must not keep the hardcoded development auth bypass for production.
 
 ---
 
@@ -253,14 +262,14 @@ The Python service must not include these in the current version:
 
 ### FR-1: Auth Middleware
 
-The service must have FastAPI middleware to validate bearer token by calling Java API.
+The service must have FastAPI middleware to require bearer token format. Current development mode hardcodes a valid admin session instead of calling Java. Production mode must restore Java API validation.
 
 Acceptance criteria:
 
 - Missing token returns 401.
-- Invalid token returns 401.
-- Java validation API error returns 503.
-- Valid token continues request.
+- Bearer-format token continues request during development bypass.
+- Invalid token returns 401 after Java validation is restored.
+- Java validation API error returns 503 after Java validation is restored.
 - User/session information can be attached to request context.
 
 ---
@@ -519,7 +528,8 @@ Completed:
 - YAML configuration exists with app, Java API, security, MediaMTX, recording, worker, storage, and disabled future database sections.
 - Basic `/health` and detailed `/api/v1/health` endpoints exist.
 - Structured logging and RTSP credential masking are implemented.
-- Java API client validates bearer tokens and fetches the Java stream-device list from `/api/devices/stream/all`.
+- Java API client currently hardcodes auth pass for development and fetches the Java stream-device list from `/api/devices/stream/all`.
+- Java auth validation is temporarily hardcoded to pass for development; stream-device lookup still calls Java.
 - Bearer token middleware protects non-public routes and attaches session info to request state.
 - Camera service selects camera info by `customDeviceId` or `deviceId`, normalizes newline-padded Java values, and keeps RTSP URLs internal.
 - MediaMTX service generates `cam-{camera_id}` paths and public HLS URLs from YAML config.

@@ -10,7 +10,7 @@ Current implementation status:
 - Structured console and file logging
 - RTSP credential masking helper
 - Basic and detailed health endpoints
-- Java API client for token validation and stream-device camera info
+- Java API client with temporary hardcoded auth pass and stream-device camera info
 - Bearer token middleware for protected APIs
 - Camera service active-status validation
 - MediaMTX HLS URL/path generation
@@ -157,3 +157,9 @@ When recording is disabled, `POST /api/v1/recorders/{camera_id}/start` returns `
 ## Notes
 
 The Python service must not expose raw RTSP URLs to the frontend. Logging masks RTSP credentials before writing to console or file output.
+
+React integration handoff:
+
+```txt
+../docs/react_integration_guide.md
+```

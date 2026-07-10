@@ -5,7 +5,7 @@ from pathlib import Path
 import httpx
 
 from app.core.config import load_settings
-from app.core.exceptions import AuthServiceUnavailableError, AuthTokenInvalidError, CameraNotFoundError
+from app.core.exceptions import CameraNotFoundError
 from app.services.java_client import JavaApiClient
 
 
@@ -16,43 +16,17 @@ def settings_for_test():
 
 
 class JavaApiClientTests(unittest.TestCase):
-    def test_valid_token_response_is_parsed(self) -> None:
+    def test_validate_token_returns_dev_bypass_session_without_api_call(self) -> None:
         def handler(request: httpx.Request) -> httpx.Response:
-            self.assertEqual(request.headers["Authorization"], "Bearer valid-token")
-            return httpx.Response(
-                200,
-                json={
-                    "valid": True,
-                    "userId": "USER-101",
-                    "username": "harsh",
-                    "roles": ["ADMIN"],
-                    "permissions": ["CAMERA_LIVE_VIEW"],
-                },
-            )
+            self.fail("validate_token should not call Java while dev bypass is enabled")
 
         client = JavaApiClient(settings_for_test(), transport=httpx.MockTransport(handler))
-        session = asyncio.run(client.validate_token("valid-token"))
+        session = asyncio.run(client.validate_token("any-token"))
 
-        self.assertEqual(session.user_id, "USER-101")
+        self.assertTrue(session.valid)
+        self.assertEqual(session.user_id, "DEV-BYPASS-USER")
         self.assertEqual(session.roles, ["ADMIN"])
-
-    def test_invalid_token_response_is_handled(self) -> None:
-        def handler(request: httpx.Request) -> httpx.Response:
-            return httpx.Response(200, json={"valid": False, "message": "Invalid or expired token"})
-
-        client = JavaApiClient(settings_for_test(), transport=httpx.MockTransport(handler))
-
-        with self.assertRaises(AuthTokenInvalidError):
-            asyncio.run(client.validate_token("bad-token"))
-
-    def test_java_timeout_maps_to_auth_service_unavailable(self) -> None:
-        def handler(request: httpx.Request) -> httpx.Response:
-            raise httpx.TimeoutException("timeout")
-
-        client = JavaApiClient(settings_for_test(), transport=httpx.MockTransport(handler))
-
-        with self.assertRaises(AuthServiceUnavailableError):
-            asyncio.run(client.validate_token("valid-token"))
+        self.assertIn("CAMERA_LIVE_VIEW", session.permissions)
 
     def test_camera_device_info_response_is_parsed(self) -> None:
         def handler(request: httpx.Request) -> httpx.Response:

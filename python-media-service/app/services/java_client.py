@@ -20,21 +20,32 @@ class JavaApiClient:
         self.base_url = settings.java_api.base_url.rstrip("/")
 
     async def validate_token(self, token: str) -> SessionInfo:
-        endpoint = self.settings.java_api.session_validate_endpoint
-        data = await self._request_json("GET", endpoint, token)
-
-        if data.get("valid") is False:
-            raise AuthTokenInvalidError()
-
-        try:
-            session = SessionInfo.model_validate(data)
-        except ValidationError as exc:
-            raise AuthTokenInvalidError() from exc
-
-        if not session.valid:
-            raise AuthTokenInvalidError()
-
-        return session
+        # Development bypass: Java auth validation is temporarily disabled.
+        # Restore the API call below when Java session validation is ready.
+        # endpoint = self.settings.java_api.session_validate_endpoint
+        # data = await self._request_json("GET", endpoint, token)
+        #
+        # if data.get("valid") is False:
+        #     raise AuthTokenInvalidError()
+        #
+        # try:
+        #     session = SessionInfo.model_validate(data)
+        # except ValidationError as exc:
+        #     raise AuthTokenInvalidError() from exc
+        #
+        # if not session.valid:
+        #     raise AuthTokenInvalidError()
+        #
+        # return session
+        return SessionInfo.model_validate(
+            {
+                "valid": True,
+                "userId": "DEV-BYPASS-USER",
+                "username": "dev-bypass",
+                "roles": ["ADMIN"],
+                "permissions": ["CAMERA_LIVE_VIEW", "CAMERA_PLAYBACK", "CAMERA_RECORDING"],
+            }
+        )
 
     async def get_camera_device_info(self, camera_id: str, token: str) -> CameraDeviceInfo:
         endpoint = self.settings.java_api.camera_stream_all_endpoint
