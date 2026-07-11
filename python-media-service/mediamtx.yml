@@ -1,5 +1,8 @@
 api: yes
 apiAddress: :9997
+readTimeout: 10s
+writeTimeout: 10s
+writeQueueSize: 1024
 
 authInternalUsers:
   - user: any
@@ -13,13 +16,22 @@ authInternalUsers:
 
 rtsp: yes
 rtspAddress: :8554
+rtspTransports:
+  - tcp
+  - udp
 
 hls: yes
 hlsAddress: :8888
+hlsAlwaysRemux: yes
+hlsVariant: mpegts
+hlsSegmentCount: 3
+hlsSegmentDuration: 1s
+hlsMuxerCloseAfter: 10s
 
 webrtc: yes
 webrtcAddress: :8889
 webrtcLocalUDPAddress: :8189
+webrtcIPsFromInterfaces: yes
 webrtcAdditionalHosts:
   - 192.168.0.103
 
